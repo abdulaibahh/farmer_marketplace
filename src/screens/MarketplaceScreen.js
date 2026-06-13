@@ -20,6 +20,7 @@ import {
   Divider,
   EmptyState,
   Input,
+  FeatureCarousel,
   ProductMedia,
   SearchField,
   SectionHeader,
@@ -101,6 +102,67 @@ export function MarketplaceScreen() {
     [visibleProducts]
   );
 
+  const heroSlides = useMemo(() => {
+    const openFeatured = featuredProducts[0] || visibleProducts[0] || null;
+    const topPick = featuredProducts[1] || openFeatured;
+
+    return [
+      {
+        id: 'fresh-harvest',
+        eyebrow: 'Fresh harvest',
+        title: 'Browse the freshest market picks in one place.',
+        description: `${featuredProducts.length} featured listings are ready to explore from trusted farmers.`,
+        cta: 'Open featured produce',
+        tone: 'success',
+        colors: [colors.heroStart, colors.heroEnd],
+        stats: [
+          { value: String(visibleProducts.length), label: 'Live items' },
+          { value: String(featuredProducts.length), label: 'Featured' }
+        ],
+        onPress: () => {
+          if (openFeatured) {
+            setSelectedProductId(openFeatured.id);
+          }
+        }
+      },
+      {
+        id: 'smart-filters',
+        eyebrow: 'Smart filters',
+        title: 'Tap a card, open a listing, and refine your search fast.',
+        description: 'Sort by latest, compare pricing, and jump straight into the checkout flow.',
+        cta: 'Reset to all products',
+        tone: 'primary',
+        colors: [colors.primaryDark, colors.primary],
+        stats: [
+          { value: 'Search', label: 'By crop' },
+          { value: 'Sort', label: 'By price' }
+        ],
+        onPress: () => {
+          setCategory('All');
+          setSortBy('featured');
+        }
+      },
+      {
+        id: 'secure-checkout',
+        eyebrow: 'Secure checkout',
+        title: 'Order with Stripe-ready payment flows and flexible delivery.',
+        description: 'Every product card opens a detailed order sheet with payment and delivery choices.',
+        cta: topPick ? `Preview ${topPick.name}` : 'Start shopping',
+        tone: 'accent',
+        colors: [colors.accent, '#A86710'],
+        stats: [
+          { value: '3', label: 'Payment options' },
+          { value: '100%', label: 'Responsive' }
+        ],
+        onPress: () => {
+          if (topPick) {
+            setSelectedProductId(topPick.id);
+          }
+        }
+      }
+    ];
+  }, [featuredProducts, setSelectedProductId, setCategory, setSortBy, visibleProducts]);
+
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) || null,
     [products, selectedProductId]
@@ -146,9 +208,12 @@ export function MarketplaceScreen() {
       showsVerticalScrollIndicator={false}
     >
       <SectionHeader
+        eyebrow="Browse"
         title="Marketplace"
         subtitle="Browse fresh produce, search by name or farmer, and place direct orders."
       />
+
+      <FeatureCarousel slides={heroSlides} />
 
       <View style={styles.statsRow}>
         <StatCard
@@ -157,6 +222,10 @@ export function MarketplaceScreen() {
           hint="Ready to browse"
           icon="🛒"
           tone="primary"
+          onPress={() => {
+            setCategory('All');
+            setSortBy('latest');
+          }}
         />
         <StatCard
           label="Featured picks"
@@ -164,6 +233,12 @@ export function MarketplaceScreen() {
           hint="Top produce"
           icon="✨"
           tone="accent"
+          onPress={() => {
+            const focusProduct = featuredProducts[0] || visibleProducts[0];
+            if (focusProduct) {
+              setSelectedProductId(focusProduct.id);
+            }
+          }}
         />
         <StatCard
           label="Average rating"
@@ -171,6 +246,9 @@ export function MarketplaceScreen() {
           hint="Buyer feedback"
           icon="⭐"
           tone="info"
+          onPress={() => {
+            setSortBy('featured');
+          }}
         />
       </View>
 
@@ -213,7 +291,7 @@ export function MarketplaceScreen() {
 
       {featuredProducts.length > 0 ? (
         <Card style={styles.panel}>
-          <SectionHeader title="Featured produce" subtitle="High-demand products from trusted farmers." />
+          <SectionHeader eyebrow="Spotlight" title="Featured produce" subtitle="High-demand products from trusted farmers." />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredRow}>
             {featuredProducts.map((product) => (
               <Pressable
@@ -232,6 +310,7 @@ export function MarketplaceScreen() {
       ) : null}
 
       <SectionHeader
+        eyebrow="Catalogue"
         title="All products"
         subtitle={visibleProducts.length ? `${visibleProducts.length} matches found.` : 'No products match your filters.'}
       />

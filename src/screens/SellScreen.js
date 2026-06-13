@@ -153,6 +153,7 @@ export function SellScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <SectionHeader
+        eyebrow="Farmer tools"
         title="Seller dashboard"
         subtitle="Add new farm produce, update stock levels, and respond to buyer orders."
       />
@@ -296,6 +297,7 @@ export function SellScreen() {
       </Card>
 
       <SectionHeader
+        eyebrow="Inventory"
         title="Your listings"
         subtitle={farmerProducts.length ? 'Tap edit to change price, stock, or details.' : 'No listings yet.'}
       />
@@ -309,7 +311,12 @@ export function SellScreen() {
           />
         ) : (
           farmerProducts.map((product) => (
-            <Card key={product.id} style={styles.productCard}>
+            <Card
+              key={product.id}
+              style={styles.productCard}
+              onPress={() => editProduct(product)}
+              accessibilityLabel={`Edit ${product.name}`}
+            >
               <View style={styles.productTop}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.productTitle}>{product.name}</Text>
@@ -354,6 +361,7 @@ export function SellScreen() {
       </View>
 
       <SectionHeader
+        eyebrow="Orders"
         title="Incoming orders"
         subtitle={farmerOrders.length ? 'Confirm or complete orders as they move through the system.' : 'No orders yet.'}
       />
@@ -367,7 +375,12 @@ export function SellScreen() {
           />
         ) : (
           farmerOrders.map((order) => (
-            <Card key={order.id} style={styles.orderCard}>
+            <Card
+              key={order.id}
+              style={styles.orderCard}
+              onPress={() => (order.status === 'pending' ? confirmOrder(order.id) : order.status === 'confirmed' ? deliverOrder(order.id) : null)}
+              accessibilityLabel={`${order.status === 'pending' ? 'Confirm' : order.status === 'confirmed' ? 'Deliver' : 'View'} ${order.productName}`}
+            >
               <View style={styles.productTop}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.productTitle}>{order.productName}</Text>
@@ -408,7 +421,7 @@ export function SellScreen() {
         )}
       </View>
 
-      <SectionHeader title="Sales history" subtitle="Completed orders and revenue built from your farm listings." />
+      <SectionHeader eyebrow="Performance" title="Sales history" subtitle="Completed orders and revenue built from your farm listings." />
       <View style={styles.metricsRow}>
         <StatCard label="Confirmed" value={String(confirmedOrders.length)} hint="In progress" icon="✅" tone="accent" />
         <StatCard label="Delivered" value={String(deliveredOrders.length)} hint="Completed" icon="🚚" tone="success" />

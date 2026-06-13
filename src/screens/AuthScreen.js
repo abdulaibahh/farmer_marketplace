@@ -13,7 +13,7 @@ import { useMarketplace } from '../context/MarketplaceContext';
 import { paymentMethods } from '../data/catalog';
 import { colors, gradients, radius, spacing, typeScale, weights } from '../theme';
 import { roleLabel } from '../utils/format';
-import { Badge, Button, Card, Chip, Input, SectionHeader, StatCard } from '../components/ui';
+import { Button, Card, Chip, FeatureCarousel, Input, SectionHeader, StatCard } from '../components/ui';
 
 export function AuthScreen() {
   const { signIn, register } = useMarketplace();
@@ -28,6 +28,45 @@ export function AuthScreen() {
   const [phone, setPhone] = useState('');
   const [storeName, setStoreName] = useState('');
   const [bio, setBio] = useState('');
+
+  const heroSlides = [
+    {
+      id: 'buyer',
+      eyebrow: 'Buyer path',
+      title: 'Shop fresh produce from trusted farmers.',
+      description: 'Browse seasonal harvests, compare prices, and checkout in minutes.',
+      cta: 'Start as a buyer',
+      tone: 'primary',
+      colors: [colors.primaryDark, colors.primary],
+      onPress: () => {
+        setMode('register');
+        setRole('buyer');
+      }
+    },
+    {
+      id: 'farmer',
+      eyebrow: 'Farmer path',
+      title: 'List produce, manage stock, and receive direct orders.',
+      description: 'Turn the form below into a live storefront powered by PostgreSQL.',
+      cta: 'Start as a farmer',
+      tone: 'success',
+      colors: [colors.heroStart, colors.heroEnd],
+      onPress: () => {
+        setMode('register');
+        setRole('farmer');
+      }
+    },
+    {
+      id: 'checkout',
+      eyebrow: 'Secure checkout',
+      title: 'Stripe checkout with flexible payment options.',
+      description: 'Built for a polished production experience from day one.',
+      cta: 'Sign in now',
+      tone: 'accent',
+      colors: [colors.accent, '#A86710'],
+      onPress: () => setMode('login')
+    }
+  ];
 
   const submit = async () => {
     if (mode === 'login') {
@@ -59,33 +98,52 @@ export function AuthScreen() {
         showsVerticalScrollIndicator={false}
       >
         <LinearGradient colors={gradients.hero} style={styles.hero}>
-          <Badge label="Farmer Marketplace" tone="success" />
+          <Text style={styles.kicker}>Farmer Marketplace</Text>
           <Text style={styles.title}>Connect farmers and buyers directly.</Text>
           <Text style={styles.subtitle}>
             A mobile commerce workspace for Sierra Leone with listing management, order tracking,
             secure payments, and admin moderation.
           </Text>
-          <View style={styles.heroPills}>
-            <Badge label="PostgreSQL ready" tone="success" />
-            <Badge label="Stripe checkout" tone="accent" />
-            <Badge label="Responsive UI" tone="primary" />
-          </View>
         </LinearGradient>
 
+        <FeatureCarousel slides={heroSlides} />
+
         <View style={[styles.metricsRow, isWide && styles.metricsRowWide]}>
-          <StatCard label="Direct sales" value="100%" hint="No middlemen" icon="🌱" tone="primary" />
-          <StatCard label="Payment options" value="3" hint="Cash + digital" icon="💳" tone="accent" />
+          <StatCard
+            label="Buyer flow"
+            value="Instant"
+            hint="Tap to register"
+            icon="🛍️"
+            tone="primary"
+            onPress={() => {
+              setMode('register');
+              setRole('buyer');
+            }}
+          />
+          <StatCard
+            label="Farmer flow"
+            value="Direct"
+            hint="Tap to sell"
+            icon="🌾"
+            tone="accent"
+            onPress={() => {
+              setMode('register');
+              setRole('farmer');
+            }}
+          />
+          <StatCard
+            label="Secure checkout"
+            value="Live"
+            hint="Tap to sign in"
+            icon="💳"
+            tone="info"
+            onPress={() => setMode('login')}
+          />
         </View>
 
         <Card style={styles.panel}>
           <SectionHeader
-            title="Production access"
-            subtitle="Create a buyer or farmer account to begin. Admin access is provisioned separately for platform operators."
-          />
-        </Card>
-
-        <Card style={styles.panel}>
-          <SectionHeader
+            eyebrow="Access"
             title={mode === 'login' ? 'Sign in' : 'Create account'}
             subtitle={
               mode === 'login'
@@ -210,16 +268,6 @@ export function AuthScreen() {
             style={styles.submitButton}
           />
         </Card>
-
-        <Card style={styles.panel}>
-          <SectionHeader title="What the app covers" subtitle="Aligned to the project brief." />
-          <View style={styles.bulletGroup}>
-            <Text style={styles.bullet}>• Farmers can add, edit, and pause product listings.</Text>
-            <Text style={styles.bullet}>• Buyers can browse, search, order, and pay.</Text>
-            <Text style={styles.bullet}>• Admin can manage users, listings, and transaction reports.</Text>
-            <Text style={styles.bullet}>• Mobile money, bank transfer, and cash on delivery are supported.</Text>
-          </View>
-        </Card>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -240,6 +288,13 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.lg,
     overflow: 'hidden'
+  },
+  kicker: {
+    color: '#CFE9DB',
+    fontSize: typeScale.xs,
+    fontWeight: weights.bold,
+    letterSpacing: 1,
+    textTransform: 'uppercase'
   },
   title: {
     color: '#FFFFFF',
@@ -298,14 +353,6 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: spacing.lg
-  },
-  bulletGroup: {
-    gap: spacing.sm
-  },
-  bullet: {
-    color: colors.text,
-    fontSize: typeScale.sm,
-    lineHeight: 20
   },
   heroPills: {
     flexDirection: 'row',

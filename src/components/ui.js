@@ -2,12 +2,15 @@ import React, { useMemo, useState } from 'react';
 import {
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
   TextInput,
+  useWindowDimensions,
   View
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typeScale, weights } from '../theme';
 import { initialsFromName } from '../utils/format';
 
@@ -39,14 +42,43 @@ const buttonVariants = {
   }
 };
 
-export function Card({ children, style }) {
-  return <View style={[styles.card, style]}>{children}</View>;
+export function Card({ children, style, onPress, disabled = false, accessibilityLabel }) {
+  if (!onPress) {
+    return <View style={[styles.card, style]}>{children}</View>;
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed, hovered, focused }) => [
+        styles.card,
+        styles.cardPressable,
+        hovered && !disabled ? styles.cardHover : null,
+        focused ? styles.cardFocused : null,
+        {
+          opacity: disabled ? 0.55 : pressed ? 0.94 : 1,
+          transform: pressed && !disabled
+            ? [{ translateY: -1 }]
+            : hovered && !disabled
+              ? [{ translateY: -2 }]
+              : [{ translateY: 0 }]
+        },
+        style
+      ]}
+    >
+      {children}
+    </Pressable>
+  );
 }
 
-export function SectionHeader({ title, subtitle, action }) {
+export function SectionHeader({ title, subtitle, action, eyebrow }) {
   return (
     <View style={styles.sectionHeader}>
       <View style={{ flex: 1 }}>
+        {!!eyebrow && <Text style={styles.sectionEyebrow}>{eyebrow}</Text>}
         <Text style={styles.sectionTitle}>{title}</Text>
         {!!subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
       </View>
@@ -71,8 +103,10 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [
+      style={({ pressed, hovered, focused }) => [
         styles.button,
+        hovered && !disabled ? styles.buttonHover : null,
+        focused ? styles.buttonFocused : null,
         {
           backgroundColor: palette.backgroundColor,
           borderColor: palette.borderColor,
@@ -144,13 +178,15 @@ export function Chip({ label, active = false, onPress, style }) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
+      style={({ pressed, hovered, focused }) => [
         styles.chip,
         {
           backgroundColor: active ? colors.primary : colors.surface,
           borderColor: active ? colors.primary : colors.border,
           opacity: pressed ? 0.9 : 1
         },
+        hovered && !active ? styles.chipHover : null,
+        focused ? styles.chipFocused : null,
         style
       ]}
     >
@@ -159,10 +195,14 @@ export function Chip({ label, active = false, onPress, style }) {
   );
 }
 
-export function StatCard({ label, value, hint, icon, tone = 'primary' }) {
+export function StatCard({ label, value, hint, icon, tone = 'primary', onPress, accessibilityLabel }) {
   const palette = statTones[tone] || statTones.primary;
   return (
-    <Card style={[styles.statCard, { backgroundColor: palette.background, borderColor: palette.border }]}>
+    <Card
+      onPress={onPress}
+      accessibilityLabel={accessibilityLabel || label}
+      style={[styles.statCard, onPress && styles.statCardPressable, { backgroundColor: palette.background, borderColor: palette.border }]}
+    >
       <View style={styles.statTopRow}>
         <Text style={styles.statIcon}>{icon}</Text>
         <Text style={[styles.statHint, { color: palette.text }]}>{hint}</Text>
@@ -170,6 +210,69 @@ export function StatCard({ label, value, hint, icon, tone = 'primary' }) {
       <Text style={[styles.statValue, { color: palette.text }]}>{value}</Text>
       <Text style={[styles.statLabel, { color: palette.text }]}>{label}</Text>
     </Card>
+  );
+}
+
+export function FeatureCarousel({ slides, style }) {
+  const { width } = useWindowDimensions();
+  const slideWidth = Math.min(420, Math.max(280, width - spacing.lg * 2));
+
+  return (
+    <ScrollView
+      horizontal
+      pagingEnabled
+      decelerationRate="fast"
+      showsHorizontalScrollIndicator={false}
+      snapToInterval={slideWidth + spacing.md}
+      snapToAlignment="start"
+      contentContainerStyle={[styles.carouselRow, style]}
+    >
+      {slides.map((slide) => {
+        const textColor = slide.textColor || '#FFFFFF';
+        const mutedColor = slide.mutedTextColor || 'rgba(255,255,255,0.84)';
+        const accentColor = slide.accentTextColor || '#FFFFFF';
+
+        return (
+          <Pressable
+            key={slide.id || slide.title}
+            accessibilityRole="button"
+            accessibilityLabel={slide.accessibilityLabel || slide.title}
+            onPress={slide.onPress}
+            style={({ pressed }) => [
+              styles.carouselWrap,
+              { width: slideWidth },
+              pressed && { opacity: 0.95, transform: [{ translateY: -2 }] }
+            ]}
+          >
+            <LinearGradient colors={slide.colors || [colors.surface, colors.surfaceSoft]} style={styles.carouselCard}>
+              <View style={styles.carouselHeader}>
+                {slide.eyebrow ? <Badge label={slide.eyebrow} tone={slide.tone || 'primary'} /> : <View />}
+                {slide.tag ? <Text style={[styles.carouselTag, { color: mutedColor }]}>{slide.tag}</Text> : null}
+              </View>
+
+              <Text style={[styles.carouselTitle, { color: textColor }]}>{slide.title}</Text>
+              <Text style={[styles.carouselDescription, { color: mutedColor }]}>{slide.description}</Text>
+
+              {Array.isArray(slide.stats) && slide.stats.length > 0 ? (
+                <View style={styles.carouselStats}>
+                  {slide.stats.map((stat) => (
+                    <View key={`${slide.id || slide.title}-${stat.label}`} style={styles.carouselStat}>
+                      <Text style={styles.carouselStatValue}>{stat.value}</Text>
+                      <Text style={styles.carouselStatLabel}>{stat.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
+              <View style={styles.carouselFooter}>
+                <Text style={[styles.carouselCta, { color: accentColor }]}>{slide.cta || 'Open'}</Text>
+                <Text style={[styles.carouselArrow, { color: accentColor }]}>→</Text>
+              </View>
+            </LinearGradient>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
   );
 }
 
@@ -209,7 +312,9 @@ export function ToggleField({ label, value, onValueChange, helper }) {
 export function EmptyState({ title, description, actionLabel, onAction, icon = '🌾' }) {
   return (
     <Card style={styles.emptyCard}>
-      <Text style={styles.emptyIcon}>{icon}</Text>
+      <View style={styles.emptyIconBadge}>
+        <Text style={styles.emptyIcon}>{icon}</Text>
+      </View>
       <Text style={styles.emptyTitle}>{title}</Text>
       <Text style={styles.emptyDescription}>{description}</Text>
       {actionLabel ? <Button label={actionLabel} onPress={onAction} style={{ marginTop: spacing.md }} /> : null}
@@ -223,7 +328,7 @@ export function ProductMedia({ uri, title, category, style }) {
 
   if (!uri || loadFailed) {
     return (
-      <View style={[styles.mediaFallback, style]}>
+      <View style={[styles.mediaFrame, styles.mediaFallback, style]}>
         <Text style={styles.mediaFallbackLabel}>{fallbackLabel}</Text>
         <Text style={styles.mediaFallbackTitle}>{title}</Text>
       </View>
@@ -231,12 +336,18 @@ export function ProductMedia({ uri, title, category, style }) {
   }
 
   return (
-    <Image
-      source={{ uri }}
-      style={[styles.mediaImage, style]}
-      onError={() => setLoadFailed(true)}
-      resizeMode="cover"
-    />
+    <View style={[styles.mediaFrame, style]}>
+      <Image
+        source={{ uri }}
+        style={styles.mediaImage}
+        onError={() => setLoadFailed(true)}
+        resizeMode="cover"
+      />
+      <View style={styles.mediaOverlay} />
+      <View style={styles.mediaBadgeWrap}>
+        <Badge label={category || 'Produce'} tone="success" />
+      </View>
+    </View>
   );
 }
 
@@ -251,7 +362,7 @@ export function FieldRow({ children, style }) {
 export function Callout({ title, description, tone = 'neutral' }) {
   const palette = badgeTones[tone] || badgeTones.neutral;
   return (
-    <View style={[styles.callout, { backgroundColor: palette.background, borderColor: palette.border }]}>
+    <View style={[styles.callout, { backgroundColor: palette.background, borderColor: palette.border, borderLeftColor: palette.text }]}>
       <Text style={[styles.calloutTitle, { color: palette.text }]}>{title}</Text>
       <Text style={[styles.calloutDescription, { color: palette.text }]}>{description}</Text>
     </View>
@@ -336,12 +447,36 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 4
   },
+  cardPressable: {
+    cursor: 'pointer'
+  },
+  cardHover: {
+    shadowOpacity: 0.22,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 14 },
+    borderColor: '#C8D7CD'
+  },
+  cardFocused: {
+    borderColor: colors.primary,
+    shadowOpacity: 0.2
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.md,
-    marginBottom: spacing.md
+    marginBottom: spacing.md,
+    paddingLeft: spacing.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary
+  },
+  sectionEyebrow: {
+    color: colors.primaryDark,
+    fontSize: typeScale.xs,
+    fontWeight: weights.bold,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    marginBottom: 4
   },
   sectionTitle: {
     color: colors.text,
@@ -363,6 +498,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8
+  },
+  buttonHover: {
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3
+  },
+  buttonFocused: {
+    borderColor: colors.primary
   },
   buttonLabel: {
     fontSize: typeScale.md,
@@ -426,6 +571,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 8
   },
+  chipHover: {
+    backgroundColor: '#F8FBF8',
+    borderColor: '#C9D9CE',
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2
+  },
+  chipFocused: {
+    borderColor: colors.primary
+  },
   chipText: {
     fontSize: typeScale.sm,
     fontWeight: weights.semibold
@@ -433,6 +590,9 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: 156
+  },
+  statCardPressable: {
+    cursor: 'pointer'
   },
   statTopRow: {
     flexDirection: 'row',
@@ -455,6 +615,84 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: typeScale.sm,
     fontWeight: weights.medium
+  },
+  carouselRow: {
+    gap: spacing.md,
+    paddingVertical: spacing.xs
+  },
+  carouselWrap: {
+    minHeight: 212
+  },
+  carouselCard: {
+    flex: 1,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+    minHeight: 212
+  },
+  carouselHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: spacing.md
+  },
+  carouselTag: {
+    color: colors.muted,
+    fontSize: typeScale.xs,
+    fontWeight: weights.semibold
+  },
+  carouselTitle: {
+    color: colors.text,
+    fontSize: typeScale.xl,
+    fontWeight: weights.bold,
+    lineHeight: 30,
+    marginTop: spacing.md
+  },
+  carouselDescription: {
+    color: colors.muted,
+    fontSize: typeScale.sm,
+    lineHeight: 20,
+    marginTop: spacing.sm
+  },
+  carouselStats: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.md
+  },
+  carouselStat: {
+    minWidth: 88,
+    backgroundColor: 'rgba(255,255,255,0.62)',
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md
+  },
+  carouselStatValue: {
+    color: colors.text,
+    fontSize: typeScale.md,
+    fontWeight: weights.bold
+  },
+  carouselStatLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs,
+    marginTop: 2
+  },
+  carouselFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.lg
+  },
+  carouselCta: {
+    color: colors.primaryDark,
+    fontSize: typeScale.sm,
+    fontWeight: weights.bold
+  },
+  carouselArrow: {
+    color: colors.primaryDark,
+    fontSize: typeScale.lg,
+    fontWeight: weights.bold
   },
   avatar: {
     alignItems: 'center',
@@ -488,11 +726,22 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     alignItems: 'center',
-    paddingVertical: spacing.xxl
+    paddingVertical: spacing.xxl,
+    backgroundColor: '#FCFDFB'
+  },
+  emptyIconBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceSoft,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    marginBottom: spacing.md
   },
   emptyIcon: {
-    fontSize: 38,
-    marginBottom: spacing.sm
+    fontSize: 32
   },
   emptyTitle: {
     color: colors.text,
@@ -510,18 +759,35 @@ const styles = StyleSheet.create({
   },
   mediaImage: {
     width: '100%',
-    aspectRatio: 1.5,
+    height: '100%',
     borderRadius: radius.md,
     backgroundColor: colors.surfaceSoft
   },
-  mediaFallback: {
+  mediaFrame: {
     width: '100%',
     aspectRatio: 1.5,
     borderRadius: radius.md,
+    overflow: 'hidden',
     backgroundColor: colors.surfaceSoft,
+    position: 'relative'
+  },
+  mediaFallback: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.md
+  },
+  mediaOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '42%',
+    backgroundColor: 'rgba(13, 31, 22, 0.18)'
+  },
+  mediaBadgeWrap: {
+    position: 'absolute',
+    top: spacing.sm,
+    left: spacing.sm
   },
   mediaFallbackLabel: {
     color: colors.primaryDark,
@@ -549,7 +815,8 @@ const styles = StyleSheet.create({
   callout: {
     borderWidth: 1,
     borderRadius: radius.md,
-    padding: spacing.md
+    padding: spacing.md,
+    borderLeftWidth: 4
   },
   calloutTitle: {
     fontSize: typeScale.md,

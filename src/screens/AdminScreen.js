@@ -58,6 +58,7 @@ export function AdminScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <SectionHeader
+        eyebrow="Moderation"
         title="Admin console"
         subtitle="Monitor users, listings, and transactions while keeping the marketplace clean and reliable."
       />
@@ -77,13 +78,23 @@ export function AdminScreen() {
       />
 
       <SectionHeader
+        eyebrow="People"
         title="User management"
         subtitle="Suspend inactive profiles or restore access when the issue has been resolved."
       />
 
       <View style={styles.grid}>
         {users.map((user) => (
-          <Card key={user.id} style={styles.userCard}>
+          <Card
+            key={user.id}
+            style={styles.userCard}
+            onPress={() => {
+              if (user.id !== currentUser.id) {
+                toggleUserStatus(user.id);
+              }
+            }}
+            accessibilityLabel={`${user.isActive ? 'Suspend' : 'Restore'} ${user.name}`}
+          >
             <View style={styles.cardHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.cardTitle}>{user.name}</Text>
@@ -110,6 +121,7 @@ export function AdminScreen() {
       </View>
 
       <SectionHeader
+        eyebrow="Listings"
         title="Listing moderation"
         subtitle={`${hiddenListings.length} listings are currently hidden from the marketplace.`}
       />
@@ -123,7 +135,12 @@ export function AdminScreen() {
           />
         ) : (
           products.map((product) => (
-            <Card key={product.id} style={styles.productCard}>
+            <Card
+              key={product.id}
+              style={styles.productCard}
+              onPress={() => (product.isVisible ? removeProduct(product.id) : restoreProduct(product.id))}
+              accessibilityLabel={`${product.isVisible ? 'Remove' : 'Restore'} ${product.name}`}
+            >
               <View style={styles.cardHeader}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardTitle}>{product.name}</Text>
@@ -164,6 +181,7 @@ export function AdminScreen() {
       </View>
 
       <SectionHeader
+        eyebrow="Reports"
         title="Marketplace reports"
         subtitle="Quick snapshots for transaction monitoring and business reviews."
       />

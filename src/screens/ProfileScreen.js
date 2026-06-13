@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { paymentMethods } from '../data/catalog';
 import { averageScore, roleLabel } from '../utils/format';
@@ -60,6 +60,7 @@ export function ProfileScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <SectionHeader
+        eyebrow="Account"
         title="Profile"
         subtitle="Keep your contact details, market preferences, and store identity up to date."
       />
@@ -161,25 +162,47 @@ export function ProfileScreen() {
         <Button label="Save profile" onPress={update} style={styles.saveButton} />
       </Card>
 
-      <SectionHeader title="Account summary" subtitle="Useful at a glance for handoffs and reporting." />
+      <SectionHeader eyebrow="Snapshot" title="Account summary" subtitle="Useful at a glance for handoffs and reporting." />
 
       <View style={styles.summaryGrid}>
-        <Card style={styles.summaryCard}>
+        <Card
+          style={styles.summaryCard}
+          onPress={async () => {
+            if (currentUser.phone) {
+              await Linking.openURL(`tel:${currentUser.phone.replace(/\s+/g, '')}`);
+            } else {
+              await Linking.openURL(`mailto:${currentUser.email}`);
+            }
+          }}
+          accessibilityLabel="Contact account owner"
+        >
           <Text style={styles.summaryLabel}>Contact</Text>
           <Text style={styles.summaryValue}>{currentUser.phone || 'No phone added'}</Text>
         </Card>
-        <Card style={styles.summaryCard}>
+        <Card
+          style={styles.summaryCard}
+          onPress={async () => {
+            if (currentUser.location) {
+              await Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentUser.location)}`);
+            }
+          }}
+          accessibilityLabel="Open location in maps"
+        >
           <Text style={styles.summaryLabel}>Location</Text>
           <Text style={styles.summaryValue}>{currentUser.location || 'No location added'}</Text>
         </Card>
-        <Card style={styles.summaryCard}>
+        <Card
+          style={styles.summaryCard}
+          onPress={update}
+          accessibilityLabel="Save payment settings"
+        >
           <Text style={styles.summaryLabel}>Payment</Text>
           <Text style={styles.summaryValue}>{currentUser.preferredPaymentMethod || '—'}</Text>
         </Card>
       </View>
 
       <Card style={styles.detailsCard}>
-        <SectionHeader title="Profile note" subtitle="A short description helps the marketplace stay human and trustworthy." />
+        <SectionHeader eyebrow="Bio" title="Profile note" subtitle="A short description helps the marketplace stay human and trustworthy." />
         <Text style={styles.detailsText}>{currentUser.bio || 'No bio has been added yet.'}</Text>
       </Card>
 

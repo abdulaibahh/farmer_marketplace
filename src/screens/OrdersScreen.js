@@ -69,6 +69,7 @@ export function OrdersScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <SectionHeader
+        eyebrow="Transactions"
         title={title}
         subtitle={
           isBuyer
@@ -92,6 +93,7 @@ export function OrdersScreen() {
       />
 
       <SectionHeader
+        eyebrow="History"
         title={isBuyer ? 'Purchase history' : 'Order feed'}
         subtitle={scopedOrders.length ? 'Most recent activity appears first.' : 'No orders to show yet.'}
       />
@@ -105,7 +107,24 @@ export function OrdersScreen() {
           />
         ) : (
           scopedOrders.map((order) => (
-            <Card key={order.id} style={styles.orderCard}>
+            <Card
+              key={order.id}
+              style={styles.orderCard}
+              onPress={() => {
+                if (isBuyer && order.status === 'delivered' && !order.reviewed) {
+                  openReview(order.id);
+                }
+
+                if (!isBuyer && order.status === 'pending') {
+                  confirmOrder(order.id);
+                }
+
+                if (!isBuyer && order.status === 'confirmed') {
+                  deliverOrder(order.id);
+                }
+              }}
+              accessibilityLabel={`${order.productName} order`}
+            >
               <View style={styles.orderHeader}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.orderTitle}>{order.productName}</Text>

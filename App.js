@@ -9,7 +9,7 @@ import { SellScreen } from './src/screens/SellScreen';
 import { OrdersScreen } from './src/screens/OrdersScreen';
 import { AdminScreen } from './src/screens/AdminScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
-import { Badge, Button } from './src/components/ui';
+import { Badge, Button, Chip, StatCard } from './src/components/ui';
 import { colors, gradients, radius, spacing, typeScale, weights } from './src/theme';
 import { formatLeones, roleLabel } from './src/utils/format';
 
@@ -61,6 +61,7 @@ function AppShell() {
     () => tabs.filter((tab) => tab.roles.includes(currentUser?.role)),
     [currentUser?.role]
   );
+  const adminFallbackTab = currentUser?.role === 'admin' ? 'admin' : 'orders';
 
   useEffect(() => {
     if (!currentUser) {
@@ -88,8 +89,40 @@ function AppShell() {
         <View style={styles.appFrame}>
           {(() => {
             const activeTabConfig = availableTabs.find((tab) => tab.id === activeTab) || availableTabs[0];
-            return (
-              <View style={styles.centerShell}>
+              return (
+                <View style={styles.centerShell}>
+                  <View pointerEvents="none" style={styles.backdropLayer}>
+                    <LinearGradient
+                      colors={['rgba(134, 212, 183, 0.24)', 'rgba(134, 212, 183, 0)']}
+                      style={styles.backdropGlowLeft}
+                    />
+                    <LinearGradient
+                      colors={['rgba(215, 156, 42, 0.18)', 'rgba(215, 156, 42, 0)']}
+                      style={styles.backdropGlowRight}
+                    />
+                  </View>
+
+                  <View style={[styles.topNav, isWide && styles.topNavWide]}>
+                    <View style={styles.topNavBrandRow}>
+                      <View style={{ flex: 1 }}>
+                      <Text style={styles.topNavEyebrow}>Farmer Marketplace</Text>
+                      <Text style={styles.topNavTitle}>Live trade, clean design, fast checkout</Text>
+                    </View>
+                    <Badge label="Backend live" tone="success" />
+                  </View>
+
+                  <View style={styles.topNavChips}>
+                    {availableTabs.map((tab) => (
+                      <Chip
+                        key={tab.id}
+                        label={tab.label}
+                        active={tab.id === activeTab}
+                        onPress={() => setActiveTab(tab.id)}
+                      />
+                    ))}
+                  </View>
+                </View>
+
                 <LinearGradient colors={gradients.hero} style={styles.headerCard}>
                   <View style={styles.headerTopRow}>
                     <View style={{ flex: 1 }}>
@@ -104,18 +137,30 @@ function AppShell() {
                   </View>
 
                   <View style={styles.headerMetrics}>
-                    <View style={styles.headerMetric}>
-                      <Text style={styles.metricLabel}>Active listings</Text>
-                      <Text style={styles.metricValue}>{analytics.activeProducts}</Text>
-                    </View>
-                    <View style={styles.headerMetric}>
-                      <Text style={styles.metricLabel}>Revenue</Text>
-                      <Text style={styles.metricValue}>{formatLeones(analytics.totalRevenue)}</Text>
-                    </View>
-                    <View style={styles.headerMetric}>
-                      <Text style={styles.metricLabel}>Pending</Text>
-                      <Text style={styles.metricValue}>{analytics.pendingOrders}</Text>
-                    </View>
+                    <StatCard
+                      label="Open market"
+                      value={String(analytics.activeProducts)}
+                      hint="Tap to browse"
+                      icon="🛒"
+                      tone="primary"
+                      onPress={() => setActiveTab('market')}
+                    />
+                    <StatCard
+                      label="Order revenue"
+                      value={formatLeones(analytics.totalRevenue)}
+                      hint="Tap to review"
+                      icon="💰"
+                      tone="accent"
+                      onPress={() => setActiveTab('orders')}
+                    />
+                    <StatCard
+                      label="Pending tasks"
+                      value={String(analytics.pendingOrders)}
+                      hint={currentUser.role === 'admin' ? 'Tap admin tools' : 'Tap orders'}
+                      icon="⏳"
+                      tone="info"
+                      onPress={() => setActiveTab(adminFallbackTab)}
+                    />
                   </View>
 
                   <View style={styles.currentUserRow}>
@@ -144,7 +189,13 @@ function AppShell() {
                       <Pressable
                         key={tab.id}
                         onPress={() => setActiveTab(tab.id)}
-                        style={({ pressed }) => [styles.tabItem, active && styles.tabItemActive, pressed && { opacity: 0.92 }]}
+                        style={({ pressed, hovered, focused }) => [
+                          styles.tabItem,
+                          active && styles.tabItemActive,
+                          hovered && !active ? styles.tabItemHover : null,
+                          focused ? styles.tabItemFocused : null,
+                          pressed && { opacity: 0.92 }
+                        ]}
                       >
                         <Text style={styles.tabIcon}>{tab.icon}</Text>
                         <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
@@ -201,7 +252,69 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: 1240,
-    alignSelf: 'center'
+    alignSelf: 'center',
+    position: 'relative'
+  },
+  backdropLayer: {
+    ...StyleSheet.absoluteFillObject
+  },
+  backdropGlowLeft: {
+    position: 'absolute',
+    top: -80,
+    left: -60,
+    width: 260,
+    height: 260,
+    borderRadius: 260
+  },
+  backdropGlowRight: {
+    position: 'absolute',
+    top: 120,
+    right: -60,
+    width: 320,
+    height: 320,
+    borderRadius: 320
+  },
+  topNav: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+    gap: spacing.md
+  },
+  topNavWide: {
+    marginBottom: spacing.md
+  },
+  topNavBrandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md
+  },
+  topNavEyebrow: {
+    color: colors.primaryDark,
+    fontSize: typeScale.xs,
+    fontWeight: weights.bold,
+    letterSpacing: 1,
+    textTransform: 'uppercase'
+  },
+  topNavTitle: {
+    color: colors.text,
+    fontSize: typeScale.md,
+    fontWeight: weights.bold,
+    marginTop: 4
+  },
+  topNavChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm
   },
   toast: {
     position: 'absolute',
@@ -250,23 +363,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     flexWrap: 'wrap'
-  },
-  headerMetric: {
-    flex: 1,
-    minWidth: 136,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderRadius: radius.md,
-    padding: spacing.md
-  },
-  metricLabel: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: typeScale.xs
-  },
-  metricValue: {
-    color: '#FFFFFF',
-    fontSize: typeScale.md,
-    fontWeight: weights.bold,
-    marginTop: 4
   },
   currentUserRow: {
     flexDirection: 'row',
@@ -323,6 +419,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: 6
+  },
+  tabItemHover: {
+    borderColor: '#C6D4C9',
+    backgroundColor: '#FBFCFB',
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2
+  },
+  tabItemFocused: {
+    borderColor: colors.primary
   },
   tabItemActive: {
     backgroundColor: colors.primary,
