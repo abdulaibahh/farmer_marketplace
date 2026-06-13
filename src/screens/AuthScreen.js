@@ -13,10 +13,10 @@ import { useMarketplace } from '../context/MarketplaceContext';
 import { paymentMethods } from '../data/catalog';
 import { colors, gradients, radius, spacing, typeScale, weights } from '../theme';
 import { roleLabel } from '../utils/format';
-import { Button, Card, Chip, FeatureCarousel, Input, SectionHeader, StatCard } from '../components/ui';
+import { Button, Card, Callout, Chip, DetailModal, FeatureCarousel, Input, SectionHeader, StatCard } from '../components/ui';
 
 export function AuthScreen() {
-  const { signIn, register } = useMarketplace();
+  const { signIn, register, notify } = useMarketplace();
   const { width } = useWindowDimensions();
   const isWide = width >= 920;
   const [mode, setMode] = useState('login');
@@ -28,6 +28,71 @@ export function AuthScreen() {
   const [phone, setPhone] = useState('');
   const [storeName, setStoreName] = useState('');
   const [bio, setBio] = useState('');
+  const [selectionMessage, setSelectionMessage] = useState('Choose a path above to see the sign-in form update.');
+  const [journeyKey, setJourneyKey] = useState(null);
+
+  const emailLooksValid = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+
+  const journeyDetails = {
+    buyer: {
+      eyebrow: 'Buyer journey',
+      title: 'Shop fresh produce with a clear checkout flow.',
+      subtitle: 'Use the marketplace to browse listings, build a cart, and pay with the method that works best for you.',
+      badgeLabel: 'Buyer path',
+      badgeTone: 'primary',
+      points: [
+        'Browse produce from trusted farmers.',
+        'Add multiple items to your cart before checkout.',
+        'Choose mobile money, bank transfer, cash on delivery, or card checkout.',
+        'Track each order from the orders tab.'
+      ],
+      ctaLabel: 'Continue as buyer',
+      nextMode: 'register',
+      nextRole: 'buyer'
+    },
+    farmer: {
+      eyebrow: 'Farmer journey',
+      title: 'List produce, manage stock, and receive direct orders.',
+      subtitle: 'Set up a seller profile, publish your produce, and keep everything updated from the seller dashboard.',
+      badgeLabel: 'Farmer path',
+      badgeTone: 'success',
+      points: [
+        'Create a farmer account with your location and store name.',
+        'Add produce listings with stock, price, and images.',
+        'Pause, restore, or update products at any time.',
+        'Confirm and complete buyer orders from the dashboard.'
+      ],
+      ctaLabel: 'Continue as farmer',
+      nextMode: 'register',
+      nextRole: 'farmer'
+    },
+    login: {
+      eyebrow: 'Secure sign-in',
+      title: 'Return to your account and continue where you left off.',
+      subtitle: 'Your saved session restores your marketplace data, cart, and payment preferences.',
+      badgeLabel: 'Sign in',
+      badgeTone: 'accent',
+      points: [
+        'Use the email address linked to your account.',
+        'Your saved role restores the right dashboard automatically.',
+        'Open orders, listings, and profile data after login.',
+        'Use the same credentials on web and mobile.'
+      ],
+      ctaLabel: 'Go to sign in',
+      nextMode: 'login',
+      nextRole: null
+    }
+  };
+
+  const selectAuthFlow = (nextMode, nextRole, message, nextJourneyKey = null) => {
+    setMode(nextMode);
+    if (nextRole) {
+      setRole(nextRole);
+    }
+    setSelectionMessage(message);
+    setJourneyKey(nextJourneyKey);
+    notify('info', message);
+  };
 
   const heroSlides = [
     {
@@ -39,8 +104,12 @@ export function AuthScreen() {
       tone: 'primary',
       colors: [colors.primaryDark, colors.primary],
       onPress: () => {
-        setMode('register');
-        setRole('buyer');
+        selectAuthFlow(
+          'register',
+          'buyer',
+          'Buyer registration selected. The form below is ready for a buyer account.',
+          'buyer'
+        );
       }
     },
     {
@@ -52,8 +121,12 @@ export function AuthScreen() {
       tone: 'success',
       colors: [colors.heroStart, colors.heroEnd],
       onPress: () => {
-        setMode('register');
-        setRole('farmer');
+        selectAuthFlow(
+          'register',
+          'farmer',
+          'Farmer registration selected. The form below is ready for a seller account.',
+          'farmer'
+        );
       }
     },
     {
@@ -64,11 +137,16 @@ export function AuthScreen() {
       cta: 'Sign in now',
       tone: 'accent',
       colors: [colors.accent, '#A86710'],
-      onPress: () => setMode('login')
+      onPress: () => selectAuthFlow('login', null, 'Sign in selected. Use your existing account details below.', 'login')
     }
   ];
 
   const submit = async () => {
+    if (!emailLooksValid(email)) {
+      notify('warning', 'Please enter a valid email address, like name@example.com.');
+      return;
+    }
+
     if (mode === 'login') {
       await signIn({ email, password });
       return;
@@ -116,8 +194,7 @@ export function AuthScreen() {
             icon="🛍️"
             tone="primary"
             onPress={() => {
-              setMode('register');
-              setRole('buyer');
+              selectAuthFlow('register', 'buyer', 'Buyer flow selected. You can register as a buyer below.', 'buyer');
             }}
           />
           <StatCard
@@ -127,8 +204,7 @@ export function AuthScreen() {
             icon="🌾"
             tone="accent"
             onPress={() => {
-              setMode('register');
-              setRole('farmer');
+              selectAuthFlow('register', 'farmer', 'Farmer flow selected. You can create a seller account below.', 'farmer');
             }}
           />
           <StatCard
@@ -137,7 +213,7 @@ export function AuthScreen() {
             hint="Tap to sign in"
             icon="💳"
             tone="info"
-            onPress={() => setMode('login')}
+            onPress={() => selectAuthFlow('login', null, 'Sign-in mode selected. Enter your email and password below.', 'login')}
           />
         </View>
 
@@ -153,10 +229,19 @@ export function AuthScreen() {
             action={
               <Chip
                 label={mode === 'login' ? 'Switch to register' : 'Switch to login'}
-                onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+                onPress={() =>
+                  selectAuthFlow(
+                    mode === 'login' ? 'register' : 'login',
+                    mode === 'login' ? role : null,
+                    mode === 'login' ? 'Registration mode enabled.' : 'Sign-in mode enabled.',
+                    mode === 'login' ? role : 'login'
+                  )
+                }
               />
             }
           />
+
+          <Callout title="Selected path" description={selectionMessage} tone="info" />
 
           {mode === 'register' ? (
             <>
@@ -167,6 +252,11 @@ export function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                textContentType="emailAddress"
+                helper="Use a real email address so we can sign you in safely."
                 style={styles.field}
               />
               <Input
@@ -250,6 +340,11 @@ export function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                textContentType="emailAddress"
+                helper="Use a real email address so the backend can validate your account."
               />
               <Input
                 label="Password"
@@ -268,6 +363,47 @@ export function AuthScreen() {
             style={styles.submitButton}
           />
         </Card>
+
+        <DetailModal
+          visible={Boolean(journeyKey && journeyDetails[journeyKey])}
+          title={journeyDetails[journeyKey]?.title || ''}
+          subtitle={journeyDetails[journeyKey]?.subtitle || ''}
+          eyebrow={journeyDetails[journeyKey]?.eyebrow}
+          badgeLabel={journeyDetails[journeyKey]?.badgeLabel}
+          badgeTone={journeyDetails[journeyKey]?.badgeTone}
+          onClose={() => setJourneyKey(null)}
+          actions={
+            <Button
+              label={journeyDetails[journeyKey]?.ctaLabel || 'Continue'}
+              onPress={() => {
+                const journey = journeyDetails[journeyKey];
+                if (!journey) {
+                  setJourneyKey(null);
+                  return;
+                }
+
+                setMode(journey.nextMode);
+                if (journey.nextRole) {
+                  setRole(journey.nextRole);
+                }
+                setSelectionMessage(
+                  journey.nextRole
+                    ? `${journey.nextRole === 'buyer' ? 'Buyer' : 'Farmer'} registration is ready. Complete the form below.`
+                    : 'Sign in is ready. Enter your email and password below.'
+                );
+                setJourneyKey(null);
+              }}
+            />
+          }
+        >
+          <View style={styles.detailPoints}>
+            {journeyDetails[journeyKey]?.points?.map((point) => (
+              <Card key={point} style={styles.detailPointCard}>
+                <Text style={styles.detailPointText}>{point}</Text>
+              </Card>
+            ))}
+          </View>
+        </DetailModal>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -318,6 +454,18 @@ const styles = StyleSheet.create({
   },
   panel: {
     gap: spacing.md
+  },
+  detailPoints: {
+    gap: spacing.sm
+  },
+  detailPointCard: {
+    backgroundColor: colors.surfaceSoft,
+    paddingVertical: spacing.md
+  },
+  detailPointText: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    lineHeight: 20
   },
   field: {
     marginTop: spacing.md

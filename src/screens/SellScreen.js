@@ -12,7 +12,9 @@ import {
   Divider,
   EmptyState,
   FieldRow,
+  DetailModal,
   Input,
+  ProductMedia,
   SectionHeader,
   StatCard,
   ToggleField
@@ -45,10 +47,14 @@ export function SellScreen() {
     updateProduct,
     toggleProductAvailability,
     confirmOrder,
-    deliverOrder
+    deliverOrder,
+    notify
   } = useMarketplace();
 
   const [draft, setDraft] = useState(emptyDraft);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [insightKey, setInsightKey] = useState(null);
 
   useEffect(() => {
     if (!draft.id) {
@@ -75,6 +81,15 @@ export function SellScreen() {
     () => reviews.filter((review) => review.sellerId === currentUser?.id),
     [currentUser?.id, reviews]
   );
+  const selectedProduct = useMemo(
+    () => farmerProducts.find((product) => product.id === selectedProductId) || null,
+    [farmerProducts, selectedProductId]
+  );
+  const selectedOrder = useMemo(
+    () => farmerOrders.find((order) => order.id === selectedOrderId) || null,
+    [farmerOrders, selectedOrderId]
+  );
+  const isFarmer = currentUser?.role === 'farmer';
 
   const farmRevenue = useMemo(
     () =>
@@ -89,9 +104,210 @@ export function SellScreen() {
   const confirmedOrders = farmerOrders.filter((order) => order.status === 'confirmed');
   const deliveredOrders = farmerOrders.filter((order) => order.status === 'delivered');
   const averageRating = averageScore(farmerReviews.map((review) => review.rating));
+  const insightInfo = useMemo(() => {
+    if (!insightKey) {
+      return null;
+    }
+
+    if (!isFarmer) {
+      switch (insightKey) {
+        case 'access-listings':
+          return {
+            eyebrow: 'Farmer access',
+            title: 'Listings dashboard',
+            subtitle: 'This workspace unlocks once you sign in with a farmer account.',
+            badgeLabel: 'Locked',
+            badgeTone: 'warning',
+            rows: [
+              ['Role needed', 'Farmer account', 'Use a seller login to publish listings.'],
+              ['What you can do', 'Add, edit, and pause products', 'Manage your storefront from one place.'],
+              ['Tip', 'Switch accounts to continue', 'The same account can still browse the market as a buyer if it has the right role.']
+            ]
+          };
+        case 'access-orders':
+          return {
+            eyebrow: 'Farmer access',
+            title: 'Incoming orders',
+            subtitle: 'Buyer requests appear here after you publish products.',
+            badgeLabel: 'Locked',
+            badgeTone: 'warning',
+            rows: [
+              ['What appears here', 'Confirmations and delivery updates', 'Track every buyer request from this dashboard.'],
+              ['Why it is locked', 'Seller actions need a farmer role', 'A buyer account cannot confirm or deliver orders.'],
+              ['Next step', 'Sign in as a farmer', 'Publish a product first, then orders will begin to flow in.']
+            ]
+          };
+        default:
+          return {
+            eyebrow: 'Farmer access',
+            title: 'Sales reporting',
+            subtitle: 'Revenue and performance insights are available after you publish listings.',
+            badgeLabel: 'Locked',
+            badgeTone: 'warning',
+            rows: [
+              ['Revenue', 'Unavailable for buyers', 'Seller revenue only appears for farmer accounts.'],
+              ['Reviews', 'Unlocked after delivery', 'Buyer feedback helps build trust.'],
+              ['Action', 'Switch to a farmer account', 'You can then manage the storefront and monitor sales.']
+            ]
+          };
+      }
+    }
+
+    const firstListing = farmerProducts[0] || null;
+    const firstPendingOrder = pendingOrders[0] || null;
+    const firstConfirmedOrder = confirmedOrders[0] || null;
+    const firstDeliveredOrder = deliveredOrders[0] || null;
+
+    switch (insightKey) {
+      case 'listings':
+        return {
+          eyebrow: 'Farmer tools',
+          title: 'Your listings',
+          subtitle: 'A quick summary of the products published from this account.',
+          badgeLabel: 'Listings',
+          badgeTone: 'primary',
+          rows: [
+            ['Total listings', String(farmerProducts.length), 'Products currently attached to your farm.'],
+            ['Visible listings', String(farmerProducts.filter((product) => product.isVisible).length), 'Products buyers can browse right now.'],
+            ['Featured items', String(farmerProducts.filter((product) => product.isFeatured).length), 'Listings promoted near the top of the market.']
+          ],
+          actionLabel: firstListing ? 'Open first listing' : null,
+          actionPress: () => {
+            if (!firstListing) {
+              setInsightKey(null);
+              return;
+            }
+
+            notify('info', `Viewing ${firstListing.name}.`);
+            setSelectedProductId(firstListing.id);
+            setInsightKey(null);
+          }
+        };
+      case 'pending':
+        return {
+          eyebrow: 'Farmer tools',
+          title: 'Awaiting action',
+          subtitle: 'Buyer orders that still need confirmation or completion.',
+          badgeLabel: 'Pending',
+          badgeTone: 'accent',
+          rows: [
+            ['Pending orders', String(pendingOrders.length), 'Orders waiting for the next action.'],
+            ['Latest request', firstPendingOrder ? firstPendingOrder.productName : 'None', firstPendingOrder ? `${firstPendingOrder.buyerName} • ${formatLeones(firstPendingOrder.totalPrice)}` : 'No buyer has requested a product yet.'],
+            ['What to do next', firstPendingOrder ? 'Confirm the order or review the note' : 'Keep publishing fresh produce', firstPendingOrder ? 'Open the order details to act on it.' : 'More listings usually lead to more orders.']
+          ],
+          actionLabel: firstPendingOrder ? 'Open first pending order' : null,
+          actionPress: () => {
+            if (!firstPendingOrder) {
+              setInsightKey(null);
+              return;
+            }
+
+            notify('info', `Viewing ${firstPendingOrder.productName}.`);
+            setSelectedOrderId(firstPendingOrder.id);
+            setInsightKey(null);
+          }
+        };
+      case 'revenue':
+        return {
+          eyebrow: 'Farmer tools',
+          title: 'Revenue overview',
+          subtitle: 'Completed sales and the trust they generate.',
+          badgeLabel: 'Revenue',
+          badgeTone: 'info',
+          rows: [
+            ['Completed revenue', formatLeones(farmRevenue), 'Only delivered orders contribute to revenue.'],
+            ['Delivered orders', String(deliveredOrders.length), 'Closed and completed transactions.'],
+            ['Average rating', averageRating ? averageRating.toFixed(1) : '—', 'Buyer feedback after delivery.']
+          ],
+          actionLabel: firstDeliveredOrder ? 'Open delivered order' : null,
+          actionPress: () => {
+            if (!firstDeliveredOrder) {
+              setInsightKey(null);
+              return;
+            }
+
+            notify('info', `Viewing ${firstDeliveredOrder.productName}.`);
+            setSelectedOrderId(firstDeliveredOrder.id);
+            setInsightKey(null);
+          }
+        };
+      case 'confirmed':
+        return {
+          eyebrow: 'Farmer tools',
+          title: 'Confirmed orders',
+          subtitle: 'Orders that are already approved and moving through fulfilment.',
+          badgeLabel: 'Confirmed',
+          badgeTone: 'accent',
+          rows: [
+            ['Confirmed orders', String(confirmedOrders.length), 'Buyers have already approved these requests.'],
+            ['Next delivery', firstConfirmedOrder ? firstConfirmedOrder.productName : 'None', firstConfirmedOrder ? `${firstConfirmedOrder.buyerName} • ${firstConfirmedOrder.deliveryMethod}` : 'No confirmed orders need action.'],
+            ['Outstanding total', formatLeones(confirmedOrders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0)), 'This amount becomes revenue once delivered.']
+          ],
+          actionLabel: firstConfirmedOrder ? 'Open confirmed order' : null,
+          actionPress: () => {
+            if (!firstConfirmedOrder) {
+              setInsightKey(null);
+              return;
+            }
+
+            notify('info', `Viewing ${firstConfirmedOrder.productName}.`);
+            setSelectedOrderId(firstConfirmedOrder.id);
+            setInsightKey(null);
+          }
+        };
+      case 'delivered':
+        return {
+          eyebrow: 'Farmer tools',
+          title: 'Delivered orders',
+          subtitle: 'Completed orders that now contribute to farm revenue.',
+          badgeLabel: 'Delivered',
+          badgeTone: 'success',
+          rows: [
+            ['Delivered orders', String(deliveredOrders.length), 'All fulfilled and closed transactions.'],
+            ['Revenue collected', formatLeones(farmRevenue), 'Delivered orders add to the payout total.'],
+            ['Latest delivery', firstDeliveredOrder ? firstDeliveredOrder.productName : 'None', firstDeliveredOrder ? `${firstDeliveredOrder.buyerName} • ${formatShortDate(firstDeliveredOrder.createdAt)}` : 'No deliveries have been completed yet.']
+          ],
+          actionLabel: firstDeliveredOrder ? 'Open delivered order' : null,
+          actionPress: () => {
+            if (!firstDeliveredOrder) {
+              setInsightKey(null);
+              return;
+            }
+
+            notify('info', `Viewing ${firstDeliveredOrder.productName}.`);
+            setSelectedOrderId(firstDeliveredOrder.id);
+            setInsightKey(null);
+          }
+        };
+      default:
+        return {
+          eyebrow: 'Farmer tools',
+          title: 'Buyer feedback',
+          subtitle: 'How shoppers rated the last completed orders.',
+          badgeLabel: 'Reviews',
+          badgeTone: 'info',
+          rows: [
+            ['Reviews', String(farmerReviews.length), 'Delivered orders can now be reviewed by buyers.'],
+            ['Average rating', averageRating ? averageRating.toFixed(1) : '—', 'A higher score helps convert new shoppers.'],
+            ['Trust signal', averageRating >= 4 ? 'Strong' : 'Buildable', 'Use clean images and reliable fulfilment to improve ratings.']
+          ]
+        };
+    }
+  }, [
+    averageRating,
+    confirmedOrders,
+    deliveredOrders,
+    farmerProducts,
+    farmerReviews.length,
+    farmRevenue,
+    insightKey,
+    isFarmer,
+    pendingOrders
+  ]);
 
   if (currentUser?.role !== 'farmer') {
     return (
+      <>
       <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <SectionHeader
           title="Seller dashboard"
@@ -103,11 +319,63 @@ export function SellScreen() {
           tone="warning"
         />
         <View style={styles.metricsRow}>
-          <StatCard label="Listings" value="—" hint="Sign in as farmer" icon="🌾" tone="primary" />
-          <StatCard label="Orders" value="—" hint="Sign in as farmer" icon="📦" tone="accent" />
-          <StatCard label="Revenue" value="—" hint="Sign in as farmer" icon="💰" tone="info" />
+          <StatCard
+            label="Listings"
+            value="—"
+            hint="Sign in as farmer"
+            icon="🌾"
+            tone="primary"
+            onPress={() => {
+              setInsightKey('access-listings');
+              notify('info', 'Opened farmer access details.');
+            }}
+          />
+          <StatCard
+            label="Orders"
+            value="—"
+            hint="Sign in as farmer"
+            icon="📦"
+            tone="accent"
+            onPress={() => {
+              setInsightKey('access-orders');
+              notify('info', 'Opened farmer access details.');
+            }}
+          />
+          <StatCard
+            label="Revenue"
+            value="—"
+            hint="Sign in as farmer"
+            icon="💰"
+            tone="info"
+            onPress={() => {
+              setInsightKey('access-revenue');
+              notify('info', 'Opened farmer access details.');
+            }}
+          />
         </View>
       </ScrollView>
+      <DetailModal
+        visible={Boolean(insightInfo)}
+        eyebrow={insightInfo?.eyebrow}
+        title={insightInfo?.title || ''}
+        subtitle={insightInfo?.subtitle || ''}
+        badgeLabel={insightInfo?.badgeLabel}
+        badgeTone={insightInfo?.badgeTone}
+        onClose={() => setInsightKey(null)}
+      >
+        {insightInfo ? (
+          <View style={styles.insightStack}>
+            {insightInfo.rows.map(([label, value, note]) => (
+              <Card key={label} style={styles.insightRowCard}>
+                <Text style={styles.insightRowLabel}>{label}</Text>
+                <Text style={styles.insightRowValue}>{value}</Text>
+                {note ? <Text style={styles.insightRowNote}>{note}</Text> : null}
+              </Card>
+            ))}
+          </View>
+        ) : null}
+      </DetailModal>
+      </>
     );
   }
 
@@ -133,6 +401,7 @@ export function SellScreen() {
   };
 
   const editProduct = (product) => {
+    notify('info', `Editing ${product.name}.`);
     setDraft({
       id: product.id,
       name: product.name,
@@ -148,7 +417,20 @@ export function SellScreen() {
     });
   };
 
-  const clearDraft = () => setDraft(emptyDraft);
+  const clearDraft = () => {
+    setDraft(emptyDraft);
+    notify('info', 'Draft cleared.');
+  };
+
+  const openProductDetails = (product) => {
+    setSelectedProductId(product.id);
+    notify('info', `Viewing ${product.name}.`);
+  };
+
+  const openOrderDetails = (order) => {
+    setSelectedOrderId(order.id);
+    notify('info', `Viewing ${order.productName}.`);
+  };
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -165,6 +447,10 @@ export function SellScreen() {
           hint="Your products"
           icon="🌾"
           tone="primary"
+          onPress={() => {
+            setInsightKey('listings');
+            notify('info', 'Opened listing details.');
+          }}
         />
         <StatCard
           label="Awaiting action"
@@ -172,6 +458,10 @@ export function SellScreen() {
           hint="Pending orders"
           icon="⏳"
           tone="accent"
+          onPress={() => {
+            setInsightKey('pending');
+            notify('info', 'Opened order queue details.');
+          }}
         />
         <StatCard
           label="Revenue"
@@ -179,6 +469,10 @@ export function SellScreen() {
           hint={`Avg rating ${averageRating ? averageRating.toFixed(1) : '—'}`}
           icon="💰"
           tone="info"
+          onPress={() => {
+            setInsightKey('revenue');
+            notify('info', 'Opened revenue details.');
+          }}
         />
       </View>
 
@@ -314,8 +608,8 @@ export function SellScreen() {
             <Card
               key={product.id}
               style={styles.productCard}
-              onPress={() => editProduct(product)}
-              accessibilityLabel={`Edit ${product.name}`}
+              onPress={() => openProductDetails(product)}
+              accessibilityLabel={`View ${product.name}`}
             >
               <View style={styles.productTop}>
                 <View style={{ flex: 1 }}>
@@ -378,8 +672,8 @@ export function SellScreen() {
             <Card
               key={order.id}
               style={styles.orderCard}
-              onPress={() => (order.status === 'pending' ? confirmOrder(order.id) : order.status === 'confirmed' ? deliverOrder(order.id) : null)}
-              accessibilityLabel={`${order.status === 'pending' ? 'Confirm' : order.status === 'confirmed' ? 'Deliver' : 'View'} ${order.productName}`}
+              onPress={() => openOrderDetails(order)}
+              accessibilityLabel={`View ${order.productName}`}
             >
               <View style={styles.productTop}>
                 <View style={{ flex: 1 }}>
@@ -423,10 +717,198 @@ export function SellScreen() {
 
       <SectionHeader eyebrow="Performance" title="Sales history" subtitle="Completed orders and revenue built from your farm listings." />
       <View style={styles.metricsRow}>
-        <StatCard label="Confirmed" value={String(confirmedOrders.length)} hint="In progress" icon="✅" tone="accent" />
-        <StatCard label="Delivered" value={String(deliveredOrders.length)} hint="Completed" icon="🚚" tone="success" />
-        <StatCard label="Reviews" value={String(farmerReviews.length)} hint="Buyer feedback" icon="⭐" tone="info" />
+        <StatCard
+          label="Confirmed"
+          value={String(confirmedOrders.length)}
+          hint="In progress"
+          icon="✅"
+          tone="accent"
+          onPress={() => {
+            setInsightKey('confirmed');
+            notify('info', 'Opened confirmed order details.');
+          }}
+        />
+        <StatCard
+          label="Delivered"
+          value={String(deliveredOrders.length)}
+          hint="Completed"
+          icon="🚚"
+          tone="success"
+          onPress={() => {
+            setInsightKey('delivered');
+            notify('info', 'Opened delivered order details.');
+          }}
+        />
+        <StatCard
+          label="Reviews"
+          value={String(farmerReviews.length)}
+          hint="Buyer feedback"
+          icon="⭐"
+          tone="info"
+          onPress={() => {
+            setInsightKey('reviews');
+            notify('info', 'Opened buyer feedback details.');
+          }}
+        />
       </View>
+
+      <DetailModal
+        visible={Boolean(selectedProduct)}
+        eyebrow="Listing details"
+        title={selectedProduct?.name || ''}
+        subtitle={`${selectedProduct?.category || ''} • ${selectedProduct?.location || 'No location added'}`}
+        badgeLabel={selectedProduct ? availabilityLabel(selectedProduct) : ''}
+        badgeTone={selectedProduct?.isAvailable ? 'success' : 'danger'}
+        onClose={() => setSelectedProductId(null)}
+        actions={
+          selectedProduct ? (
+            <View style={styles.detailActionRow}>
+              <Button
+                label="Edit listing"
+                variant="secondary"
+                onPress={() => {
+                  editProduct(selectedProduct);
+                  setSelectedProductId(null);
+                }}
+                style={styles.flex}
+              />
+              <Button
+                label={selectedProduct.isAvailable ? 'Pause' : 'Resume'}
+                variant="accent"
+                onPress={() => toggleProductAvailability(selectedProduct.id, !selectedProduct.isAvailable)}
+                style={styles.flex}
+              />
+            </View>
+          ) : null
+        }
+      >
+        {selectedProduct ? (
+          <View style={styles.detailStack}>
+            <ProductMedia uri={selectedProduct.imageUrl} title={selectedProduct.name} category={selectedProduct.category} />
+
+            <Card style={styles.detailSummaryCard}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Price</Text>
+                <Text style={styles.detailValue}>{formatLeones(selectedProduct.price)}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Stock</Text>
+                <Text style={styles.detailValue}>
+                  {selectedProduct.quantity} {selectedProduct.unit}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Featured</Text>
+                <Text style={styles.detailValue}>{selectedProduct.isFeatured ? 'Yes' : 'No'}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Visible</Text>
+                <Text style={styles.detailValue}>{selectedProduct.isVisible ? 'Public' : 'Hidden'}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Created</Text>
+                <Text style={styles.detailValue}>{formatShortDate(selectedProduct.createdAt)}</Text>
+              </View>
+            </Card>
+
+            <Card style={styles.detailSummaryCard}>
+              <Text style={styles.detailLabel}>Description</Text>
+              <Text style={styles.detailNote}>{selectedProduct.description || 'No description added.'}</Text>
+            </Card>
+          </View>
+        ) : null}
+      </DetailModal>
+
+      <DetailModal
+        visible={Boolean(selectedOrder)}
+        eyebrow="Order details"
+        title={selectedOrder?.productName || ''}
+        subtitle={`${selectedOrder?.quantity || ''} ${selectedOrder?.unit || ''} • Buyer: ${selectedOrder?.buyerName || '—'}`}
+        badgeLabel={selectedOrder?.status || ''}
+        badgeTone={selectedOrder?.status === 'delivered' ? 'success' : selectedOrder?.status === 'pending' ? 'warning' : 'info'}
+        onClose={() => setSelectedOrderId(null)}
+        actions={
+          selectedOrder ? (
+            <View style={styles.detailActionRow}>
+              {selectedOrder.status === 'pending' ? (
+                <Button
+                  label="Confirm order"
+                  onPress={() => confirmOrder(selectedOrder.id)}
+                  style={styles.flex}
+                />
+              ) : (
+                <Button
+                  label={selectedOrder.status === 'confirmed' ? 'Mark delivered' : 'Completed'}
+                  variant={selectedOrder.status === 'confirmed' ? 'accent' : 'secondary'}
+                  onPress={() => (selectedOrder.status === 'confirmed' ? deliverOrder(selectedOrder.id) : null)}
+                  disabled={selectedOrder.status !== 'confirmed'}
+                  style={styles.flex}
+                />
+              )}
+            </View>
+          ) : null
+        }
+      >
+        {selectedOrder ? (
+          <View style={styles.detailStack}>
+            <Card style={styles.detailSummaryCard}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Payment</Text>
+                <Text style={styles.detailValue}>{selectedOrder.paymentMethod}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Delivery</Text>
+                <Text style={styles.detailValue}>{selectedOrder.deliveryMethod}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Total</Text>
+                <Text style={styles.detailValue}>{formatLeones(selectedOrder.totalPrice)}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Created</Text>
+                <Text style={styles.detailValue}>{formatShortDate(selectedOrder.createdAt)}</Text>
+              </View>
+            </Card>
+
+            <Card style={styles.detailSummaryCard}>
+              <Text style={styles.detailLabel}>Customer note</Text>
+              <Text style={styles.detailNote}>{selectedOrder.note || 'No special delivery note.'}</Text>
+            </Card>
+          </View>
+        ) : null}
+      </DetailModal>
+
+      <DetailModal
+        visible={Boolean(insightInfo)}
+        eyebrow={insightInfo?.eyebrow}
+        title={insightInfo?.title || ''}
+        subtitle={insightInfo?.subtitle || ''}
+        badgeLabel={insightInfo?.badgeLabel}
+        badgeTone={insightInfo?.badgeTone}
+        onClose={() => setInsightKey(null)}
+        actions={
+          insightInfo?.actionLabel ? (
+            <Button
+              label={insightInfo.actionLabel}
+              onPress={async () => {
+                await insightInfo.actionPress?.();
+              }}
+            />
+          ) : null
+        }
+      >
+        {insightInfo ? (
+          <View style={styles.insightStack}>
+            {insightInfo.rows.map(([label, value, note]) => (
+              <Card key={label} style={styles.insightRowCard}>
+                <Text style={styles.insightRowLabel}>{label}</Text>
+                <Text style={styles.insightRowValue}>{value}</Text>
+                {note ? <Text style={styles.insightRowNote}>{note}</Text> : null}
+              </Card>
+            ))}
+          </View>
+        ) : null}
+      </DetailModal>
     </ScrollView>
   );
 }
@@ -442,6 +924,39 @@ const styles = StyleSheet.create({
     gap: spacing.lg
   },
   metricsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    flexWrap: 'wrap'
+  },
+  detailStack: {
+    gap: spacing.md
+  },
+  detailSummaryCard: {
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceSoft
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md
+  },
+  detailLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  detailValue: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    fontWeight: weights.semibold,
+    textAlign: 'right',
+    flexShrink: 1
+  },
+  detailNote: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    lineHeight: 20
+  },
+  detailActionRow: {
     flexDirection: 'row',
     gap: spacing.md,
     flexWrap: 'wrap'
@@ -516,6 +1031,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSoft
   },
   orderNote: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    lineHeight: 20
+  },
+  insightStack: {
+    gap: spacing.sm
+  },
+  insightRowCard: {
+    gap: 6,
+    backgroundColor: colors.surfaceSoft
+  },
+  insightRowLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  insightRowValue: {
+    color: colors.text,
+    fontSize: typeScale.md,
+    fontWeight: weights.bold
+  },
+  insightRowNote: {
     color: colors.text,
     fontSize: typeScale.sm,
     lineHeight: 20

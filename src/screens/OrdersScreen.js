@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { formatLeones, formatShortDate } from '../utils/format';
-import { Badge, Button, Card, EmptyState, Input, SectionHeader, StatCard, Chip } from '../components/ui';
+import { Badge, Button, Card, Chip, DetailModal, EmptyState, Input, SectionHeader, StatCard } from '../components/ui';
 import { colors, radius, spacing, typeScale, weights } from '../theme';
 
 function stars(count) {
@@ -11,7 +11,9 @@ function stars(count) {
 }
 
 export function OrdersScreen() {
-  const { currentUser, orders, addReview, confirmOrder, deliverOrder } = useMarketplace();
+  const { currentUser, orders, addReview, confirmOrder, deliverOrder, notify } = useMarketplace();
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [insightKey, setInsightKey] = useState(null);
   const [reviewTargetId, setReviewTargetId] = useState(null);
   const [reviewRating, setReviewRating] = useState('5');
   const [reviewComment, setReviewComment] = useState('');
@@ -40,10 +42,139 @@ export function OrdersScreen() {
     return { totalValue, pending, confirmed, delivered };
   }, [scopedOrders]);
 
+  const selectedOrder = useMemo(
+    () => scopedOrders.find((order) => order.id === selectedOrderId) || null,
+    [scopedOrders, selectedOrderId]
+  );
+
+  const insightInfo = useMemo(() => {
+    if (!insightKey) {
+      return null;
+    }
+
+    const pendingOrder = scopedOrders.find((order) => order.status === 'pending') || null;
+    const confirmedOrder = scopedOrders.find((order) => order.status === 'confirmed') || null;
+    const deliveredOrder = scopedOrders.find((order) => order.status === 'delivered') || null;
+    const focusOrder =
+      insightKey === 'pending'
+        ? pendingOrder
+        : insightKey === 'confirmed'
+          ? confirmedOrder
+          : insightKey === 'delivered'
+            ? deliveredOrder
+            : scopedOrders[0] || null;
+
+    if (insightKey === 'pending') {
+      return {
+        eyebrow: 'Transactions',
+        title: 'Pending orders',
+        subtitle: 'Orders waiting for confirmation or fulfilment.',
+        badgeLabel: 'Pending',
+        badgeTone: 'warning',
+        rows: [
+          ['Pending orders', String(totals.pending), 'These orders still need attention.'],
+          ['Oldest pending', pendingOrder ? pendingOrder.productName : 'None', pendingOrder ? `${pendingOrder.buyerName} • ${formatShortDate(pendingOrder.createdAt)}` : 'Everything is up to date right now.'],
+          ['Next step', pendingOrder ? 'Open the order details' : 'No action required', pendingOrder ? 'Review payment and delivery details before confirming.' : 'Use this view to monitor incoming requests.']
+        ],
+        actionLabel: pendingOrder ? 'Open next pending order' : null,
+        actionPress: () => {
+          if (!pendingOrder) {
+            setInsightKey(null);
+            return;
+          }
+
+          openOrderDetails(pendingOrder.id);
+          setInsightKey(null);
+        }
+      };
+    }
+
+    if (insightKey === 'confirmed') {
+      return {
+        eyebrow: 'Transactions',
+        title: 'Confirmed orders',
+        subtitle: 'Orders already approved and moving toward delivery.',
+        badgeLabel: 'Confirmed',
+        badgeTone: 'info',
+        rows: [
+          ['Confirmed orders', String(totals.confirmed), 'These are in progress.'],
+          ['Current focus', confirmedOrder ? confirmedOrder.productName : 'None', confirmedOrder ? `${confirmedOrder.buyerName} • ${formatLeones(confirmedOrder.totalPrice)}` : 'No confirmed order needs action.'],
+          ['Workload', `${totals.pending + totals.confirmed} active`, 'Pending and confirmed orders share the current queue.']
+        ],
+        actionLabel: confirmedOrder ? 'Open confirmed order' : null,
+        actionPress: () => {
+          if (!confirmedOrder) {
+            setInsightKey(null);
+            return;
+          }
+
+          openOrderDetails(confirmedOrder.id);
+          setInsightKey(null);
+        }
+      };
+    }
+
+    if (insightKey === 'delivered') {
+      return {
+        eyebrow: 'Transactions',
+        title: 'Delivered orders',
+        subtitle: 'Completed orders and finished transactions.',
+        badgeLabel: 'Delivered',
+        badgeTone: 'success',
+        rows: [
+          ['Delivered orders', String(totals.delivered), 'These orders have been completed.'],
+          ['Latest delivery', deliveredOrder ? deliveredOrder.productName : 'None', deliveredOrder ? `${deliveredOrder.buyerName} • ${formatShortDate(deliveredOrder.createdAt)}` : 'No completed order yet.'],
+          ['Feedback ready', deliveredOrder ? (deliveredOrder.reviewed ? 'Already reviewed' : 'Awaiting review') : 'No deliveries yet', deliveredOrder ? 'Delivered orders can be reviewed by the buyer.' : 'Once delivered, review prompts become available.']
+        ],
+        actionLabel: deliveredOrder ? 'Open delivered order' : null,
+        actionPress: () => {
+          if (!deliveredOrder) {
+            setInsightKey(null);
+            return;
+          }
+
+          openOrderDetails(deliveredOrder.id);
+          setInsightKey(null);
+        }
+      };
+    }
+
+    return {
+      eyebrow: 'Transactions',
+      title: 'Total order value',
+      subtitle: 'All tracked orders and the revenue they represent.',
+      badgeLabel: 'Value',
+      badgeTone: 'accent',
+      rows: [
+        ['Tracked orders', String(scopedOrders.length), 'Every order currently visible in this workspace.'],
+        ['Combined value', formatLeones(totals.totalValue), 'Based on the total price of each visible order.'],
+        ['Average order value', scopedOrders.length ? formatLeones(totals.totalValue / scopedOrders.length) : '—', 'Useful for checking basket size trends.']
+      ],
+      actionLabel: focusOrder ? 'Open latest order' : null,
+      actionPress: () => {
+        if (!focusOrder) {
+          setInsightKey(null);
+          return;
+        }
+
+        openOrderDetails(focusOrder.id);
+        setInsightKey(null);
+      }
+    };
+  }, [insightKey, openOrderDetails, scopedOrders, totals]);
+
   const openReview = (orderId) => {
     setReviewTargetId(orderId);
+    setSelectedOrderId(orderId);
     setReviewRating('5');
     setReviewComment('');
+    notify('info', 'Review form opened.');
+  };
+
+  const openOrderDetails = (orderId) => {
+    setSelectedOrderId(orderId);
+    setReviewTargetId(null);
+    notify('info', 'Order details opened.');
   };
 
   const submitReview = async () => {
@@ -55,6 +186,7 @@ export function OrdersScreen() {
 
     if (success) {
       setReviewTargetId(null);
+      setSelectedOrderId(null);
     }
   };
 
@@ -79,9 +211,39 @@ export function OrdersScreen() {
       />
 
       <View style={styles.metricsRow}>
-        <StatCard label="Pending" value={String(totals.pending)} hint="Awaiting action" icon="⏳" tone="warning" />
-        <StatCard label="Confirmed" value={String(totals.confirmed)} hint="In progress" icon="✅" tone="accent" />
-        <StatCard label="Delivered" value={String(totals.delivered)} hint="Completed" icon="🚚" tone="success" />
+        <StatCard
+          label="Pending"
+          value={String(totals.pending)}
+          hint="Awaiting action"
+          icon="⏳"
+          tone="warning"
+          onPress={() => {
+            setInsightKey('pending');
+            notify('info', 'Opened pending order details.');
+          }}
+        />
+        <StatCard
+          label="Confirmed"
+          value={String(totals.confirmed)}
+          hint="In progress"
+          icon="✅"
+          tone="accent"
+          onPress={() => {
+            setInsightKey('confirmed');
+            notify('info', 'Opened confirmed order details.');
+          }}
+        />
+        <StatCard
+          label="Delivered"
+          value={String(totals.delivered)}
+          hint="Completed"
+          icon="🚚"
+          tone="success"
+          onPress={() => {
+            setInsightKey('delivered');
+            notify('info', 'Opened delivered order details.');
+          }}
+        />
       </View>
 
       <StatCard
@@ -90,6 +252,10 @@ export function OrdersScreen() {
         hint={`${scopedOrders.length} tracked orders`}
         icon="💰"
         tone="info"
+        onPress={() => {
+          setInsightKey('total');
+          notify('info', 'Opened total order value details.');
+        }}
       />
 
       <SectionHeader
@@ -111,17 +277,8 @@ export function OrdersScreen() {
               key={order.id}
               style={styles.orderCard}
               onPress={() => {
-                if (isBuyer && order.status === 'delivered' && !order.reviewed) {
-                  openReview(order.id);
-                }
-
-                if (!isBuyer && order.status === 'pending') {
-                  confirmOrder(order.id);
-                }
-
-                if (!isBuyer && order.status === 'confirmed') {
-                  deliverOrder(order.id);
-                }
+                notify('info', `Opened ${order.productName}.`);
+                openOrderDetails(order.id);
               }}
               accessibilityLabel={`${order.productName} order`}
             >
@@ -147,7 +304,7 @@ export function OrdersScreen() {
 
               <Text style={styles.orderNote}>{order.note || 'No special note supplied.'}</Text>
 
-              {isBuyer && order.status === 'delivered' && !order.reviewed ? (
+              {isBuyer && order.status === 'delivered' && !order.reviewed && selectedOrderId !== order.id ? (
                 reviewTargetId === order.id ? (
                   <Card style={styles.reviewCard}>
                     <SectionHeader title="Leave review" subtitle="Rate the seller and share a short comment." />
@@ -214,6 +371,152 @@ export function OrdersScreen() {
           ))
         )}
       </View>
+
+      <DetailModal
+        visible={Boolean(selectedOrder)}
+        eyebrow="Order details"
+        title={selectedOrder?.productName || ''}
+        subtitle={
+          selectedOrder
+            ? `${selectedOrder.quantity} ${selectedOrder.unit} • ${isBuyer ? `Farmer: ${selectedOrder.farmerName}` : `Buyer: ${selectedOrder.buyerName}`}`
+            : ''
+        }
+        badgeLabel={selectedOrder?.status || ''}
+        badgeTone={selectedOrder?.status === 'delivered' ? 'success' : selectedOrder?.status === 'pending' ? 'warning' : 'info'}
+        onClose={() => {
+          setSelectedOrderId(null);
+          setReviewTargetId(null);
+        }}
+      >
+        {selectedOrder ? (
+          <View style={styles.detailStack}>
+            <Card style={styles.detailSummaryCard}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Counterpart</Text>
+                <Text style={styles.detailValue}>
+                  {isBuyer ? selectedOrder.farmerName : selectedOrder.buyerName}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Quantity</Text>
+                <Text style={styles.detailValue}>
+                  {selectedOrder.quantity} {selectedOrder.unit}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Total</Text>
+                <Text style={styles.detailValue}>{formatLeones(selectedOrder.totalPrice)}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Payment</Text>
+                <Text style={styles.detailValue}>{selectedOrder.paymentMethod}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Delivery</Text>
+                <Text style={styles.detailValue}>{selectedOrder.deliveryMethod}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Created</Text>
+                <Text style={styles.detailValue}>{formatShortDate(selectedOrder.createdAt)}</Text>
+              </View>
+            </Card>
+
+            <Card style={styles.detailSummaryCard}>
+              <Text style={styles.detailLabel}>Note</Text>
+              <Text style={styles.detailNote}>{selectedOrder.note || 'No special note supplied.'}</Text>
+            </Card>
+
+            {isBuyer && selectedOrder.status === 'delivered' && !selectedOrder.reviewed ? (
+              reviewTargetId === selectedOrder.id ? (
+                <Card style={styles.reviewCard}>
+                  <SectionHeader title="Leave review" subtitle="Rate the seller and share a short comment." />
+                  <View style={styles.chipRow}>
+                    {[1, 2, 3, 4, 5].map((score) => (
+                      <Chip
+                        key={score}
+                        label={`${score}★`}
+                        active={Number(reviewRating) === score}
+                        onPress={() => setReviewRating(String(score))}
+                      />
+                    ))}
+                  </View>
+                  <Input
+                    label="Comment"
+                    placeholder="Describe quality, communication, and delivery."
+                    value={reviewComment}
+                    onChangeText={setReviewComment}
+                    multiline
+                    numberOfLines={3}
+                  />
+                  <View style={styles.buttonRow}>
+                    <Button label="Submit review" onPress={submitReview} style={styles.flex} />
+                    <Button
+                      label="Cancel"
+                      variant="secondary"
+                      onPress={() => setReviewTargetId(null)}
+                      style={styles.cancelButton}
+                    />
+                  </View>
+                </Card>
+              ) : (
+                <Button label="Leave review" variant="accent" onPress={() => openReview(selectedOrder.id)} />
+              )
+            ) : null}
+
+            {!isBuyer ? (
+              <View style={styles.buttonRow}>
+                {selectedOrder.status === 'pending' ? (
+                  <Button
+                    label="Confirm order"
+                    onPress={() => confirmOrder(selectedOrder.id)}
+                    style={styles.flex}
+                  />
+                ) : (
+                  <Button
+                    label={selectedOrder.status === 'confirmed' ? 'Mark delivered' : 'Completed'}
+                    variant={selectedOrder.status === 'confirmed' ? 'accent' : 'secondary'}
+                    onPress={() => (selectedOrder.status === 'confirmed' ? deliverOrder(selectedOrder.id) : null)}
+                    disabled={selectedOrder.status !== 'confirmed'}
+                    style={styles.flex}
+                  />
+                )}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+      </DetailModal>
+
+      <DetailModal
+        visible={Boolean(insightInfo)}
+        eyebrow={insightInfo?.eyebrow}
+        title={insightInfo?.title || ''}
+        subtitle={insightInfo?.subtitle || ''}
+        badgeLabel={insightInfo?.badgeLabel}
+        badgeTone={insightInfo?.badgeTone}
+        onClose={() => setInsightKey(null)}
+        actions={
+          insightInfo?.actionLabel ? (
+            <Button
+              label={insightInfo.actionLabel}
+              onPress={async () => {
+                await insightInfo.actionPress?.();
+              }}
+            />
+          ) : null
+        }
+      >
+        {insightInfo ? (
+          <View style={styles.insightStack}>
+            {insightInfo.rows.map(([label, value, note]) => (
+              <Card key={label} style={styles.insightRowCard}>
+                <Text style={styles.insightRowLabel}>{label}</Text>
+                <Text style={styles.insightRowValue}>{value}</Text>
+                {note ? <Text style={styles.insightRowNote}>{note}</Text> : null}
+              </Card>
+            ))}
+          </View>
+        ) : null}
+      </DetailModal>
     </ScrollView>
   );
 }
@@ -238,6 +541,34 @@ const styles = StyleSheet.create({
   },
   orderCard: {
     gap: spacing.md
+  },
+  detailStack: {
+    gap: spacing.md
+  },
+  detailSummaryCard: {
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceSoft
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md
+  },
+  detailLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  detailValue: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    fontWeight: weights.semibold,
+    textAlign: 'right',
+    flexShrink: 1
+  },
+  detailNote: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    lineHeight: 20
   },
   orderHeader: {
     flexDirection: 'row',
@@ -297,5 +628,26 @@ const styles = StyleSheet.create({
   reviewText: {
     color: colors.muted,
     fontSize: typeScale.sm
+  },
+  insightStack: {
+    gap: spacing.sm
+  },
+  insightRowCard: {
+    gap: 6,
+    backgroundColor: colors.surfaceSoft
+  },
+  insightRowLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  insightRowValue: {
+    color: colors.text,
+    fontSize: typeScale.md,
+    fontWeight: weights.bold
+  },
+  insightRowNote: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    lineHeight: 20
   }
 });

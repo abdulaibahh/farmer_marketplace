@@ -3,11 +3,12 @@ import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { paymentMethods } from '../data/catalog';
 import { averageScore, roleLabel } from '../utils/format';
-import { AvatarCircle, Badge, Button, Card, Callout, Chip, Input, SectionHeader, StatCard } from '../components/ui';
+import { AvatarCircle, Badge, Button, Card, Callout, Chip, DetailModal, Input, SectionHeader, StatCard } from '../components/ui';
 import { colors, radius, spacing, typeScale, weights } from '../theme';
 
 export function ProfileScreen() {
-  const { currentUser, products, orders, reviews, updateProfile, signOut } = useMarketplace();
+  const { currentUser, products, orders, reviews, updateProfile, signOut, notify } = useMarketplace();
+  const [detailKey, setDetailKey] = useState(null);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [phone, setPhone] = useState('');
@@ -45,8 +46,161 @@ export function ProfileScreen() {
         : orders.length;
   const listingCount = role === 'farmer' ? farmerProducts.length : role === 'admin' ? products.length : 0;
   const ratingValue = role === 'farmer' ? averageRating : role === 'admin' ? averageScore(reviews.map((review) => review.rating)) : 0;
+  const detailInfo = useMemo(() => {
+    if (!detailKey) {
+      return null;
+    }
+
+    if (detailKey === 'contact') {
+      return {
+        eyebrow: 'Account details',
+        title: 'Contact information',
+        subtitle: 'Use these details to reach the account owner quickly.',
+        badgeLabel: 'Contact',
+        badgeTone: 'primary',
+        rows: [
+          ['Name', currentUser.name],
+          ['Phone', currentUser.phone || 'No phone added'],
+          ['Email', currentUser.email],
+          ['Store', currentUser.storeName || 'No store name added']
+        ],
+        actionLabel: currentUser.phone ? 'Call now' : 'Send email',
+        actionPress: async () => {
+          if (currentUser.phone) {
+            await Linking.openURL(`tel:${currentUser.phone.replace(/\s+/g, '')}`);
+          } else {
+            await Linking.openURL(`mailto:${currentUser.email}`);
+          }
+        }
+      };
+    }
+
+    if (detailKey === 'location') {
+      return {
+        eyebrow: 'Account details',
+        title: 'Location information',
+        subtitle: 'Open the stored location in maps or update it in the form below.',
+        badgeLabel: 'Location',
+        badgeTone: 'info',
+        rows: [
+          ['Location', currentUser.location || 'No location added'],
+          ['Role', roleLabel(role)],
+          ['Status', currentUser.isActive ? 'Active' : 'Suspended']
+        ],
+        actionLabel: currentUser.location ? 'Open in maps' : 'Close',
+        actionPress: async () => {
+          if (currentUser.location) {
+            await Linking.openURL(
+              `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentUser.location)}`
+            );
+          }
+        }
+      };
+    }
+
+    if (detailKey === 'orders') {
+      const scopedOrders =
+        role === 'buyer'
+          ? buyerOrders
+          : role === 'farmer'
+            ? orders.filter((order) => order.farmerId === currentUser.id)
+            : orders;
+
+      return {
+        eyebrow: 'Account snapshot',
+        title: 'Orders summary',
+        subtitle: 'Your order activity across the marketplace.',
+        badgeLabel: 'Orders',
+        badgeTone: 'accent',
+        rows: [
+          ['Order count', String(orderCount), role === 'buyer' ? 'Purchases made from your account.' : role === 'farmer' ? 'Sales handled from your farm dashboard.' : 'All tracked orders in the marketplace.'],
+          ['Pending', String(scopedOrders.filter((order) => order.status === 'pending').length), 'Orders waiting for the next action.'],
+          ['Delivered', String(scopedOrders.filter((order) => order.status === 'delivered').length), 'Completed transactions ready for review.']
+        ]
+      };
+    }
+
+    if (detailKey === 'listings') {
+      return {
+        eyebrow: 'Account snapshot',
+        title: 'Listing summary',
+        subtitle: 'Products and catalogue visibility tied to this account.',
+        badgeLabel: 'Listings',
+        badgeTone: 'primary',
+        rows: [
+          ['Listing count', String(listingCount), role === 'farmer' ? 'Your products currently published.' : role === 'admin' ? 'All products in the marketplace.' : 'Buyers browse public listings only.'],
+          ['Visible listings', role === 'farmer' ? String(farmerProducts.filter((product) => product.isVisible).length) : String(products.filter((product) => product.isVisible).length), 'Items currently shown to buyers.'],
+          ['Featured listings', role === 'farmer' ? String(farmerProducts.filter((product) => product.isFeatured).length) : String(products.filter((product) => product.isFeatured).length), 'Listings highlighted in the store.']
+        ]
+      };
+    }
+
+    if (detailKey === 'rating') {
+      return {
+        eyebrow: 'Account snapshot',
+        title: 'Rating summary',
+        subtitle: 'Buyer feedback and trust signals for this profile.',
+        badgeLabel: 'Ratings',
+        badgeTone: 'success',
+        rows: [
+          ['Average rating', role === 'buyer' ? '—' : ratingValue ? ratingValue.toFixed(1) : '—', role === 'buyer' ? 'Buyer profiles do not collect seller feedback.' : 'Average score across reviews.'],
+          ['Review count', role === 'farmer' ? String(sellerReviews.length) : role === 'admin' ? String(reviews.length) : '—', role === 'farmer' ? 'Reviews for this seller account.' : role === 'admin' ? 'All marketplace reviews.' : 'Not available for buyers.'],
+          ['Trust level', role === 'buyer' ? 'Buyer account' : ratingValue >= 4 ? 'Strong' : 'Growing', role === 'buyer' ? 'Ratings are based on completed purchases.' : 'Use reliable service and clear communication to improve this score.']
+        ]
+      };
+    }
+
+    return {
+      eyebrow: 'Account details',
+      title: 'Payment preference',
+      subtitle: 'Review the payment method linked to your account.',
+      badgeLabel: 'Payment',
+      badgeTone: 'success',
+      rows: [
+        ['Preferred method', currentUser.preferredPaymentMethod || '—'],
+        ['Role', roleLabel(role)],
+        ['Verified', currentUser.isVerified ? 'Yes' : 'No']
+      ],
+      actionLabel: 'Save payment preference',
+      actionPress: async () => {
+        await updateProfile({
+          name,
+          location,
+          phone,
+          storeName,
+          bio,
+          preferredPaymentMethod
+        });
+      }
+    };
+  }, [
+    bio,
+    buyerOrders,
+    currentUser,
+    detailKey,
+    farmerProducts,
+    listingCount,
+    location,
+    name,
+    orderCount,
+    phone,
+    preferredPaymentMethod,
+    products,
+    ratingValue,
+    role,
+    sellerReviews.length,
+    storeName,
+    updateProfile,
+    reviews.length
+  ]);
+
+  const openDetail = (key) => {
+    setDetailKey(key);
+    notify('info', `Opened ${key} details.`);
+  };
 
   const update = async () => {
+    notify('info', 'Saving profile changes.');
     await updateProfile({
       name,
       location,
@@ -93,6 +247,7 @@ export function ProfileScreen() {
           hint={role === 'buyer' ? 'Purchases made' : role === 'farmer' ? 'Sales handled' : 'Platform orders'}
           icon="📦"
           tone="accent"
+          onPress={() => openDetail('orders')}
         />
         <StatCard
           label="Listing count"
@@ -100,6 +255,7 @@ export function ProfileScreen() {
           hint={role === 'farmer' ? 'Your products' : role === 'admin' ? 'All products' : 'Browse only'}
           icon="🌾"
           tone="primary"
+          onPress={() => openDetail('listings')}
         />
         <StatCard
           label="Average rating"
@@ -107,6 +263,7 @@ export function ProfileScreen() {
           hint={role === 'farmer' ? 'Buyer feedback' : role === 'admin' ? 'Marketplace average' : 'Not available'}
           icon="⭐"
           tone="info"
+          onPress={() => openDetail('rating')}
         />
       </View>
 
@@ -167,13 +324,7 @@ export function ProfileScreen() {
       <View style={styles.summaryGrid}>
         <Card
           style={styles.summaryCard}
-          onPress={async () => {
-            if (currentUser.phone) {
-              await Linking.openURL(`tel:${currentUser.phone.replace(/\s+/g, '')}`);
-            } else {
-              await Linking.openURL(`mailto:${currentUser.email}`);
-            }
-          }}
+          onPress={() => openDetail('contact')}
           accessibilityLabel="Contact account owner"
         >
           <Text style={styles.summaryLabel}>Contact</Text>
@@ -181,11 +332,7 @@ export function ProfileScreen() {
         </Card>
         <Card
           style={styles.summaryCard}
-          onPress={async () => {
-            if (currentUser.location) {
-              await Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentUser.location)}`);
-            }
-          }}
+          onPress={() => openDetail('location')}
           accessibilityLabel="Open location in maps"
         >
           <Text style={styles.summaryLabel}>Location</Text>
@@ -193,7 +340,7 @@ export function ProfileScreen() {
         </Card>
         <Card
           style={styles.summaryCard}
-          onPress={update}
+          onPress={() => openDetail('payment')}
           accessibilityLabel="Save payment settings"
         >
           <Text style={styles.summaryLabel}>Payment</Text>
@@ -207,6 +354,38 @@ export function ProfileScreen() {
       </Card>
 
       <Button label="Sign out" variant="danger" onPress={signOut} />
+
+      <DetailModal
+        visible={Boolean(detailInfo)}
+        eyebrow={detailInfo?.eyebrow}
+        title={detailInfo?.title || ''}
+        subtitle={detailInfo?.subtitle || ''}
+        badgeLabel={detailInfo?.badgeLabel}
+        badgeTone={detailInfo?.badgeTone}
+        onClose={() => setDetailKey(null)}
+        actions={
+          detailInfo?.actionLabel ? (
+            <Button
+              label={detailInfo.actionLabel}
+              onPress={async () => {
+                await detailInfo.actionPress?.();
+                setDetailKey(null);
+              }}
+            />
+          ) : null
+        }
+      >
+        {detailInfo ? (
+          <View style={styles.detailStack}>
+            {detailInfo.rows.map(([label, value]) => (
+              <Card key={label} style={styles.detailRowCard}>
+                <Text style={styles.detailRowLabel}>{label}</Text>
+                <Text style={styles.detailRowValue}>{value}</Text>
+              </Card>
+            ))}
+          </View>
+        ) : null}
+      </DetailModal>
     </ScrollView>
   );
 }
@@ -277,6 +456,22 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     flexWrap: 'wrap',
     flexDirection: 'row'
+  },
+  detailStack: {
+    gap: spacing.sm
+  },
+  detailRowCard: {
+    gap: 6,
+    backgroundColor: colors.surfaceSoft
+  },
+  detailRowLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  detailRowValue: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    fontWeight: weights.semibold
   },
   summaryCard: {
     gap: 6,

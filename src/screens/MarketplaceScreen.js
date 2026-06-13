@@ -21,6 +21,7 @@ import {
   EmptyState,
   Input,
   FeatureCarousel,
+  DetailModal,
   ProductMedia,
   SearchField,
   SectionHeader,
@@ -68,6 +69,8 @@ export function MarketplaceScreen() {
   const [cartPaymentMethod, setCartPaymentMethod] = useState(paymentMethods[0]);
   const [cartDeliveryMethod, setCartDeliveryMethod] = useState(deliveryMethods[0]);
   const [cartNote, setCartNote] = useState('');
+  const [insightKey, setInsightKey] = useState(null);
+  const [heroSlideKey, setHeroSlideKey] = useState(null);
 
   const visibleProducts = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -117,10 +120,132 @@ export function MarketplaceScreen() {
     [visibleProducts]
   );
 
-  const heroSlides = useMemo(() => {
-    const openFeatured = featuredProducts[0] || visibleProducts[0] || null;
-    const topPick = featuredProducts[1] || openFeatured;
+  const marketplaceRating = useMemo(
+    () => averageScore(reviews.map((review) => review.rating)),
+    [reviews]
+  );
 
+  const productRatingStats = useMemo(
+    () =>
+      products.map((product) => {
+        const productReviews = reviews.filter((review) => review.productId === product.id);
+        return {
+          product,
+          rating: averageScore(productReviews.map((review) => review.rating)),
+          reviewCount: productReviews.length
+        };
+      }),
+    [products, reviews]
+  );
+
+  const bestRatedProduct = useMemo(
+    () =>
+      productRatingStats
+        .filter((stat) => stat.reviewCount > 0)
+        .sort((left, right) => right.rating - left.rating || right.reviewCount - left.reviewCount)[0] || null,
+    [productRatingStats]
+  );
+
+  const marketInsight = useMemo(() => {
+    if (!insightKey) {
+      return null;
+    }
+
+    if (insightKey === 'catalog') {
+      return {
+        eyebrow: 'Marketplace overview',
+        title: 'Visible listings',
+        subtitle: 'A quick snapshot of the catalogue currently shown on screen.',
+        badgeLabel: 'Catalogue',
+        badgeTone: 'primary',
+        rows: [
+          ['Visible listings', String(visibleProducts.length), 'Available in the current filter set.'],
+          ['Categories shown', String(new Set(visibleProducts.map((product) => product.category)).size || 0), 'Grouped by product type.'],
+          ['Sort mode', sortBy === 'latest' ? 'Latest arrivals' : sortBy === 'price-low' ? 'Lowest price' : sortBy === 'price-high' ? 'Highest price' : 'Featured first', 'Tap the action below to keep browsing.']
+        ],
+        actionLabel: visibleProducts.length > 0 ? 'Show latest listings' : null,
+        actionPress: () => {
+          setCategory('All');
+          setSortBy('latest');
+          setInsightKey(null);
+          notify('info', 'Showing all visible listings sorted by latest arrivals.');
+        }
+      };
+    }
+
+    if (insightKey === 'featured') {
+      const focusProduct = featuredProducts[0] || visibleProducts[0] || null;
+
+      return {
+        eyebrow: 'Spotlight',
+        title: 'Featured produce',
+        subtitle: 'The products most likely to stand out first in the marketplace.',
+        badgeLabel: 'Featured',
+        badgeTone: 'accent',
+        rows: [
+          ['Featured items', String(featuredProducts.length), 'Highlighted by farmers for quick discovery.'],
+          ['Top pick', focusProduct ? focusProduct.name : 'No featured product', focusProduct ? `${formatLeones(focusProduct.price)} · ${focusProduct.location}` : 'Add featured produce to showcase your best listing.'],
+          ['Open action', focusProduct ? 'Preview the highlighted product' : 'No product selected', 'Use the button below to open the full listing.']
+        ],
+        actionLabel: focusProduct ? 'Open featured product' : null,
+        actionPress: () => {
+          if (!focusProduct) {
+            setInsightKey(null);
+            return;
+          }
+
+          notify('info', `Opened ${focusProduct.name}.`);
+          setSelectedProductId(focusProduct.id);
+          setInsightKey(null);
+        }
+      };
+    }
+
+    if (insightKey === 'rating') {
+      const focusProduct = bestRatedProduct?.product || featuredProducts[0] || visibleProducts[0] || null;
+
+      return {
+        eyebrow: 'Buyer feedback',
+        title: 'Marketplace rating',
+        subtitle: 'Average product feedback collected from delivered orders.',
+        badgeLabel: 'Ratings',
+        badgeTone: 'info',
+        rows: [
+          ['Marketplace average', marketplaceRating ? marketplaceRating.toFixed(1) : '—', `${reviews.length} review${reviews.length === 1 ? '' : 's'} recorded.`],
+          ['Highest rated product', focusProduct ? focusProduct.name : 'No reviewed product yet', focusProduct ? `${bestRatedProduct?.rating?.toFixed(1) || '—'} rating · ${bestRatedProduct?.reviewCount || 0} review${(bestRatedProduct?.reviewCount || 0) === 1 ? '' : 's'}` : 'Encourage buyers to leave reviews after delivery.'],
+          ['Discovery tip', 'Use ratings to refine search', 'Featured items and top-rated products are easiest to find from here.']
+        ],
+        actionLabel: focusProduct ? 'Open top-rated product' : null,
+        actionPress: () => {
+          if (!focusProduct) {
+            setInsightKey(null);
+            return;
+          }
+
+          notify('info', `Opened ${focusProduct.name}.`);
+          setSelectedProductId(focusProduct.id);
+          setInsightKey(null);
+        }
+      };
+    }
+
+    return null;
+  }, [
+    bestRatedProduct,
+    featuredProducts,
+    insightKey,
+    marketplaceRating,
+    notify,
+    reviews.length,
+    setCategory,
+    setInsightKey,
+    setSelectedProductId,
+    setSortBy,
+    sortBy,
+    visibleProducts
+  ]);
+
+  const heroSlides = useMemo(() => {
     return [
       {
         id: 'fresh-harvest',
@@ -135,10 +260,8 @@ export function MarketplaceScreen() {
           { value: String(featuredProducts.length), label: 'Featured' }
         ],
         onPress: () => {
-          if (openFeatured) {
-            notify('info', `Opened ${openFeatured.name}.`);
-            setSelectedProductId(openFeatured.id);
-          }
+          setHeroSlideKey('fresh-harvest');
+          notify('info', 'Opened fresh harvest details.');
         }
       },
       {
@@ -154,9 +277,8 @@ export function MarketplaceScreen() {
           { value: 'Sort', label: 'By price' }
         ],
         onPress: () => {
-          setCategory('All');
-          setSortBy('featured');
-          notify('info', 'Filters reset to featured products.');
+          setHeroSlideKey('smart-filters');
+          notify('info', 'Opened smart filter details.');
         }
       },
       {
@@ -172,14 +294,103 @@ export function MarketplaceScreen() {
           { value: '100%', label: 'Responsive' }
         ],
         onPress: () => {
-          if (topPick) {
-            notify('info', `Opened ${topPick.name}.`);
-            setSelectedProductId(topPick.id);
-          }
+          setHeroSlideKey('secure-checkout');
+          notify('info', 'Opened secure checkout details.');
         }
       }
     ];
-  }, [featuredProducts, notify, setCategory, setSelectedProductId, setSortBy, visibleProducts]);
+  }, [featuredProducts, notify, visibleProducts]);
+
+  const heroSlideInfo = useMemo(() => {
+    if (!heroSlideKey) {
+      return null;
+    }
+
+    const openFeatured = featuredProducts[0] || visibleProducts[0] || null;
+    const topPick = featuredProducts[1] || openFeatured;
+
+    if (heroSlideKey === 'fresh-harvest') {
+      return {
+        eyebrow: 'Fresh harvest',
+        title: 'Browse the freshest market picks in one place.',
+        subtitle: 'Featured produce from trusted farmers is surfaced first for faster discovery.',
+        badgeLabel: 'Harvest',
+        badgeTone: 'success',
+        rows: [
+          ['Live items', String(visibleProducts.length), 'Visible products currently ready to browse.'],
+          ['Featured items', String(featuredProducts.length), 'Promoted produce from sellers.'],
+          ['Best next step', openFeatured ? openFeatured.name : 'No featured product', openFeatured ? `${formatLeones(openFeatured.price)} · ${openFeatured.location}` : 'Add a featured listing to make this section shine.']
+        ],
+        actionLabel: openFeatured ? 'Open featured product' : null,
+        actionPress: () => {
+          if (!openFeatured) {
+            setHeroSlideKey(null);
+            return;
+          }
+
+          notify('info', `Opened ${openFeatured.name}.`);
+          setSelectedProductId(openFeatured.id);
+          setHeroSlideKey(null);
+        }
+      };
+    }
+
+    if (heroSlideKey === 'smart-filters') {
+      return {
+        eyebrow: 'Smart filters',
+        title: 'Refine the catalogue quickly.',
+        subtitle: 'Use the filters to jump between categories, price ranges, and newer arrivals.',
+        badgeLabel: 'Filters',
+        badgeTone: 'primary',
+        rows: [
+          ['Active category', category, 'Current product group shown on the page.'],
+          ['Sort mode', sortBy === 'latest' ? 'Latest arrivals' : sortBy === 'price-low' ? 'Lowest price' : sortBy === 'price-high' ? 'Highest price' : 'Featured first', 'How the catalogue is currently ordered.'],
+          ['Matching products', String(visibleProducts.length), 'Listings that meet your search and filter criteria.']
+        ],
+        actionLabel: 'Reset filters',
+        actionPress: () => {
+          setCategory('All');
+          setSortBy('featured');
+          setHeroSlideKey(null);
+          notify('info', 'Filters reset to featured products.');
+        }
+      };
+    }
+
+    return {
+      eyebrow: 'Secure checkout',
+      title: 'Payment-ready shopping.',
+      subtitle: 'The checkout flow supports one-item card payment or multi-item mobile money style carts.',
+      badgeLabel: 'Checkout',
+      badgeTone: 'accent',
+      rows: [
+        ['Payment options', '3 methods', 'Mobile money, bank transfer, and cash on delivery.'],
+        ['Cart support', 'Yes', 'Add multiple products before paying.'],
+        ['Top pick', topPick ? topPick.name : 'No product selected', topPick ? `${formatLeones(topPick.price)} · ${topPick.location}` : 'Browse the marketplace to choose a product.']
+      ],
+      actionLabel: topPick ? 'Open top pick' : null,
+      actionPress: () => {
+        if (!topPick) {
+          setHeroSlideKey(null);
+          return;
+        }
+
+        notify('info', `Opened ${topPick.name}.`);
+        setSelectedProductId(topPick.id);
+        setHeroSlideKey(null);
+      }
+    };
+  }, [
+    category,
+    featuredProducts,
+    heroSlideKey,
+    notify,
+    setCategory,
+    setSelectedProductId,
+    setSortBy,
+    sortBy,
+    visibleProducts
+  ]);
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) || null,
@@ -243,7 +454,6 @@ export function MarketplaceScreen() {
   }, [currentUser?.preferredPaymentMethod, currentUser?.id]);
 
   const orderTotal = selectedProduct ? Number(quantity || 1) * Number(selectedProduct.price || 0) : 0;
-  const rating = averageScore(selectedReviews.map((review) => review.rating));
 
   const submitOrder = async () => {
     const success = await placeOrder({
@@ -323,6 +533,38 @@ export function MarketplaceScreen() {
 
       <FeatureCarousel slides={heroSlides} />
 
+      <DetailModal
+        visible={Boolean(heroSlideInfo)}
+        eyebrow={heroSlideInfo?.eyebrow}
+        title={heroSlideInfo?.title || ''}
+        subtitle={heroSlideInfo?.subtitle || ''}
+        badgeLabel={heroSlideInfo?.badgeLabel}
+        badgeTone={heroSlideInfo?.badgeTone}
+        onClose={() => setHeroSlideKey(null)}
+        actions={
+          heroSlideInfo?.actionLabel ? (
+            <Button
+              label={heroSlideInfo.actionLabel}
+              onPress={async () => {
+                await heroSlideInfo.actionPress?.();
+              }}
+            />
+          ) : null
+        }
+      >
+        {heroSlideInfo ? (
+          <View style={styles.insightStack}>
+            {heroSlideInfo.rows.map(([label, value, note]) => (
+              <Card key={label} style={styles.insightRowCard}>
+                <Text style={styles.insightRowLabel}>{label}</Text>
+                <Text style={styles.insightRowValue}>{value}</Text>
+                {note ? <Text style={styles.insightRowNote}>{note}</Text> : null}
+              </Card>
+            ))}
+          </View>
+        ) : null}
+      </DetailModal>
+
       <View style={styles.statsRow}>
         <StatCard
           label="Visible listings"
@@ -330,12 +572,11 @@ export function MarketplaceScreen() {
           hint="Ready to browse"
           icon="🛒"
           tone="primary"
-        onPress={() => {
-          setCategory('All');
-          setSortBy('latest');
-          notify('info', 'Showing all visible listings sorted by latest arrivals.');
-        }}
-      />
+          onPress={() => {
+            setInsightKey('catalog');
+            notify('info', 'Opened marketplace overview.');
+          }}
+        />
         <StatCard
           label="Featured picks"
           value={String(featuredProducts.length)}
@@ -343,24 +584,21 @@ export function MarketplaceScreen() {
           icon="✨"
           tone="accent"
           onPress={() => {
-          const focusProduct = featuredProducts[0] || visibleProducts[0];
-          if (focusProduct) {
-            notify('info', `Opened ${focusProduct.name}.`);
-            setSelectedProductId(focusProduct.id);
-          }
-        }}
+            setInsightKey('featured');
+            notify('info', 'Opened featured produce details.');
+          }}
         />
         <StatCard
           label="Average rating"
-          value={rating ? rating.toFixed(1) : '—'}
+          value={marketplaceRating ? marketplaceRating.toFixed(1) : '—'}
           hint="Buyer feedback"
           icon="⭐"
-        tone="info"
-        onPress={() => {
-          setSortBy('featured');
-          notify('info', 'Sorted products by featured first.');
-        }}
-      />
+          tone="info"
+          onPress={() => {
+            setInsightKey('rating');
+            notify('info', 'Opened marketplace rating details.');
+          }}
+        />
       </View>
 
       {currentUser?.role === 'buyer' ? (
@@ -607,7 +845,7 @@ export function MarketplaceScreen() {
                     </Text>
                   </View>
                   <View style={styles.ratingBadge}>
-                    <Text style={styles.ratingText}>{stars(product.farmerRating || rating)}</Text>
+                    <Text style={styles.ratingText}>{stars(product.farmerRating || marketplaceRating)}</Text>
                   </View>
                 </View>
 
@@ -849,6 +1087,38 @@ export function MarketplaceScreen() {
           </View>
         </View>
       </Modal>
+
+      <DetailModal
+        visible={Boolean(marketInsight)}
+        eyebrow={marketInsight?.eyebrow}
+        title={marketInsight?.title || ''}
+        subtitle={marketInsight?.subtitle || ''}
+        badgeLabel={marketInsight?.badgeLabel}
+        badgeTone={marketInsight?.badgeTone}
+        onClose={() => setInsightKey(null)}
+        actions={
+          marketInsight?.actionLabel ? (
+            <Button
+              label={marketInsight.actionLabel}
+              onPress={async () => {
+                await marketInsight.actionPress?.();
+              }}
+            />
+          ) : null
+        }
+      >
+        {marketInsight ? (
+          <View style={styles.insightStack}>
+            {marketInsight.rows.map(([label, value, note]) => (
+              <Card key={label} style={styles.insightRowCard}>
+                <Text style={styles.insightRowLabel}>{label}</Text>
+                <Text style={styles.insightRowValue}>{value}</Text>
+                {note ? <Text style={styles.insightRowNote}>{note}</Text> : null}
+              </Card>
+            ))}
+          </View>
+        ) : null}
+      </DetailModal>
     </ScrollView>
   );
 }
@@ -1188,6 +1458,27 @@ const styles = StyleSheet.create({
     fontSize: typeScale.xs
   },
   reviewComment: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    lineHeight: 20
+  },
+  insightStack: {
+    gap: spacing.sm
+  },
+  insightRowCard: {
+    gap: 6,
+    backgroundColor: colors.surfaceSoft
+  },
+  insightRowLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  insightRowValue: {
+    color: colors.text,
+    fontSize: typeScale.md,
+    fontWeight: weights.bold
+  },
+  insightRowNote: {
     color: colors.text,
     fontSize: typeScale.sm,
     lineHeight: 20

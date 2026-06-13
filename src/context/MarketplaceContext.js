@@ -32,6 +32,28 @@ function normalizeCartItems(items) {
   return Array.from(grouped, ([productId, quantity]) => ({ productId, quantity }));
 }
 
+function formatValidationMessage(error, fallbackMessage) {
+  const rawMessage = String(error?.message || '').trim();
+
+  if (rawMessage) {
+    try {
+      const parsed = JSON.parse(rawMessage);
+      const issues = Array.isArray(parsed) ? parsed : [parsed];
+      const emailIssue = issues.find((issue) => Array.isArray(issue?.path) && issue.path.includes('email'));
+
+      if (emailIssue) {
+        return 'Please enter a valid email address, like name@example.com.';
+      }
+    } catch {
+      if (/invalid email/i.test(rawMessage)) {
+        return 'Please enter a valid email address, like name@example.com.';
+      }
+    }
+  }
+
+  return rawMessage || fallbackMessage;
+}
+
 function computeAnalytics({ users, products, orders }) {
   const activeProducts = products.filter((product) => product.isVisible && product.isAvailable);
   const completedOrders = orders.filter((order) => order.status === 'delivered');
@@ -125,7 +147,7 @@ export function MarketplaceProvider({ children }) {
 
   const handleRemoteError = async (error, fallbackMessage) => {
     if (error?.status) {
-      notify('danger', error.message);
+      notify('danger', formatValidationMessage(error, fallbackMessage));
       return false;
     }
 

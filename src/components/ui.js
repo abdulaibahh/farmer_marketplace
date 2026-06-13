@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -135,7 +136,8 @@ export function Input({
   right,
   style,
   inputStyle,
-  numberOfLines
+  numberOfLines,
+  ...rest
 }) {
   return (
     <View style={style}>
@@ -151,6 +153,7 @@ export function Input({
           editable={editable}
           secureTextEntry={secureTextEntry}
           numberOfLines={numberOfLines}
+          {...rest}
           style={[
             styles.input,
             multiline && styles.inputMultiline,
@@ -366,6 +369,42 @@ export function Callout({ title, description, tone = 'neutral' }) {
       <Text style={[styles.calloutTitle, { color: palette.text }]}>{title}</Text>
       <Text style={[styles.calloutDescription, { color: palette.text }]}>{description}</Text>
     </View>
+  );
+}
+
+export function DetailModal({
+  visible,
+  title,
+  subtitle,
+  eyebrow,
+  badgeLabel,
+  badgeTone = 'primary',
+  onClose,
+  children,
+  actions
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.detailBackdrop}>
+        <View style={styles.detailSheet}>
+          <ScrollView contentContainerStyle={styles.detailContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.detailHeader}>
+              <View style={{ flex: 1 }}>
+                {!!eyebrow && <Text style={styles.detailEyebrow}>{eyebrow}</Text>}
+                {!!badgeLabel && <Badge label={badgeLabel} tone={badgeTone} style={styles.detailBadge} />}
+                <Text style={styles.detailTitle}>{title}</Text>
+                {!!subtitle && <Text style={styles.detailSubtitle}>{subtitle}</Text>}
+              </View>
+              <Button label="Close" variant="ghost" size="sm" onPress={onClose} />
+            </View>
+
+            {children}
+
+            {actions ? <View style={styles.detailActions}>{actions}</View> : null}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -826,5 +865,53 @@ const styles = StyleSheet.create({
   calloutDescription: {
     fontSize: typeScale.sm,
     lineHeight: 20
+  },
+  detailBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(9, 22, 15, 0.45)',
+    justifyContent: 'flex-end'
+  },
+  detailSheet: {
+    maxHeight: '92%',
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  detailContent: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+    gap: spacing.lg
+  },
+  detailHeader: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    alignItems: 'flex-start'
+  },
+  detailEyebrow: {
+    color: colors.primaryDark,
+    fontSize: typeScale.xs,
+    fontWeight: weights.bold,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 4
+  },
+  detailBadge: {
+    marginBottom: spacing.sm
+  },
+  detailTitle: {
+    color: colors.text,
+    fontSize: typeScale.xl,
+    fontWeight: weights.bold
+  },
+  detailSubtitle: {
+    color: colors.muted,
+    fontSize: typeScale.sm,
+    lineHeight: 20,
+    marginTop: 6
+  },
+  detailActions: {
+    gap: spacing.sm
   }
 });
