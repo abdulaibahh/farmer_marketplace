@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Farmer Marketplace",
+    "slug": "farmer-marketplace",
+    "version": "1.0.0",
+    "scheme": "farmermarketplace",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F4F8F0"
+    },
+    "android": {
+      "package": "com.salone2.farmermarketplace",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B7E4B"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.salone2.farmermarketplace",
+      "supportsTablet": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ]
+  }
+}
