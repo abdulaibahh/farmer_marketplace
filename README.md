@@ -46,7 +46,10 @@ Official pricing pages:
 ### 2) Deploy the backend on Render
 
 1. Create a new Render Web Service from this repo, or import `render.yaml`
-2. Set `rootDir` to `backend` if you deploy manually
+2. Use:
+   - Build command: `cd backend && npm ci`
+   - Start command: `cd backend && npm start`
+   - Plan: `free`
 3. Add environment variables:
    - `DATABASE_URL`
    - `JWT_SECRET`
@@ -57,6 +60,13 @@ Official pricing pages:
    - `STRIPE_CURRENCY`
    - `PAYMENT_FX_RATE`
 4. Use your live Render URL as `EXPO_PUBLIC_API_URL` in the frontend
+
+If Render shows Docker settings instead of build/start commands, use this instead:
+
+- Root Directory: leave blank
+- Dockerfile Path: `Dockerfile`
+- Docker Build Context Directory: `.`
+- Docker Command: leave blank
 
 ### 3) Deploy the frontend on Netlify
 
