@@ -41,7 +41,19 @@ function stars(count) {
 }
 
 export function MarketplaceScreen() {
-  const { currentUser, products, reviews, analytics, placeOrder } = useMarketplace();
+  const {
+    currentUser,
+    products,
+    reviews,
+    analytics,
+    placeOrder,
+    cartItems,
+    addToCart,
+    updateCartItemQuantity,
+    removeCartItem,
+    clearCart,
+    notify
+  } = useMarketplace();
   const { width } = useWindowDimensions();
   const columns = width >= 1100 ? 3 : width >= 720 ? 2 : 1;
   const cardBasis = columns === 3 ? '31.5%' : columns === 2 ? '48.5%' : '100%';
@@ -53,6 +65,9 @@ export function MarketplaceScreen() {
   const [paymentMethod, setPaymentMethod] = useState(paymentMethods[0]);
   const [deliveryMethod, setDeliveryMethod] = useState(deliveryMethods[0]);
   const [note, setNote] = useState('');
+  const [cartPaymentMethod, setCartPaymentMethod] = useState(paymentMethods[0]);
+  const [cartDeliveryMethod, setCartDeliveryMethod] = useState(deliveryMethods[0]);
+  const [cartNote, setCartNote] = useState('');
 
   const visibleProducts = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -121,6 +136,7 @@ export function MarketplaceScreen() {
         ],
         onPress: () => {
           if (openFeatured) {
+            notify('info', `Opened ${openFeatured.name}.`);
             setSelectedProductId(openFeatured.id);
           }
         }
@@ -140,6 +156,7 @@ export function MarketplaceScreen() {
         onPress: () => {
           setCategory('All');
           setSortBy('featured');
+          notify('info', 'Filters reset to featured products.');
         }
       },
       {
@@ -156,12 +173,13 @@ export function MarketplaceScreen() {
         ],
         onPress: () => {
           if (topPick) {
+            notify('info', `Opened ${topPick.name}.`);
             setSelectedProductId(topPick.id);
           }
         }
       }
     ];
-  }, [featuredProducts, setSelectedProductId, setCategory, setSortBy, visibleProducts]);
+  }, [featuredProducts, notify, setCategory, setSelectedProductId, setSortBy, visibleProducts]);
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) || null,
@@ -171,6 +189,40 @@ export function MarketplaceScreen() {
   const selectedReviews = useMemo(
     () => reviews.filter((review) => review.productId === selectedProduct?.id),
     [reviews, selectedProduct?.id]
+  );
+
+  const cartLineItems = useMemo(
+    () =>
+      cartItems
+        .map((item) => {
+          const product = products.find((candidate) => candidate.id === item.productId);
+          if (!product) {
+            return null;
+          }
+
+          const quantityInCart = Math.max(1, Math.min(Number(item.quantity || 1), Number(product.quantity || 0)));
+          if (quantityInCart <= 0) {
+            return null;
+          }
+
+          return {
+            product,
+            quantity: quantityInCart,
+            lineTotal: quantityInCart * Number(product.price || 0)
+          };
+        })
+        .filter(Boolean),
+    [cartItems, products]
+  );
+
+  const cartItemCount = useMemo(
+    () => cartLineItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+    [cartLineItems]
+  );
+
+  const cartTotal = useMemo(
+    () => cartLineItems.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0),
+    [cartLineItems]
   );
 
   useEffect(() => {
@@ -183,6 +235,12 @@ export function MarketplaceScreen() {
     setDeliveryMethod(deliveryMethods[0]);
     setNote('');
   }, [currentUser?.preferredPaymentMethod, selectedProduct]);
+
+  useEffect(() => {
+    setCartPaymentMethod(currentUser?.preferredPaymentMethod || paymentMethods[0]);
+    setCartDeliveryMethod(deliveryMethods[0]);
+    setCartNote('');
+  }, [currentUser?.preferredPaymentMethod, currentUser?.id]);
 
   const orderTotal = selectedProduct ? Number(quantity || 1) * Number(selectedProduct.price || 0) : 0;
   const rating = averageScore(selectedReviews.map((review) => review.rating));
@@ -198,6 +256,56 @@ export function MarketplaceScreen() {
 
     if (success) {
       setSelectedProductId(null);
+    }
+  };
+
+  const addProductToCart = async (product, quantityValue = 1) => {
+    await addToCart(product.id, quantityValue);
+  };
+
+  const checkoutCart = async () => {
+    if (currentUser?.role !== 'buyer') {
+      notify('warning', 'Log in as a buyer to use the cart.');
+      return;
+    }
+
+    if (cartLineItems.length === 0) {
+      notify('warning', 'Your cart is empty.');
+      return;
+    }
+
+    if (cartPaymentMethod === 'Secure Card Checkout' && cartLineItems.length > 1) {
+      notify('warning', 'Stripe checkout handles one cart item at a time. Use a mobile payment method for multi-item carts.');
+      return;
+    }
+
+    for (const lineItem of cartLineItems) {
+      const result = await placeOrder(
+        {
+          productId: lineItem.product.id,
+          quantity: lineItem.quantity,
+          paymentMethod: cartPaymentMethod,
+          deliveryMethod: cartDeliveryMethod,
+          note: cartNote
+        },
+        {
+          openCheckout: cartPaymentMethod === 'Secure Card Checkout',
+          silent: true
+        }
+      );
+
+      if (!result) {
+        return;
+      }
+    }
+
+    await clearCart();
+    setCartNote('');
+
+    if (cartPaymentMethod === 'Secure Card Checkout') {
+      notify('info', 'Your secure payment opened in a browser. Complete it to finish the cart checkout.');
+    } else {
+      notify('success', 'Your cart has been checked out successfully.');
     }
   };
 
@@ -222,11 +330,12 @@ export function MarketplaceScreen() {
           hint="Ready to browse"
           icon="🛒"
           tone="primary"
-          onPress={() => {
-            setCategory('All');
-            setSortBy('latest');
-          }}
-        />
+        onPress={() => {
+          setCategory('All');
+          setSortBy('latest');
+          notify('info', 'Showing all visible listings sorted by latest arrivals.');
+        }}
+      />
         <StatCard
           label="Featured picks"
           value={String(featuredProducts.length)}
@@ -234,23 +343,171 @@ export function MarketplaceScreen() {
           icon="✨"
           tone="accent"
           onPress={() => {
-            const focusProduct = featuredProducts[0] || visibleProducts[0];
-            if (focusProduct) {
-              setSelectedProductId(focusProduct.id);
-            }
-          }}
+          const focusProduct = featuredProducts[0] || visibleProducts[0];
+          if (focusProduct) {
+            notify('info', `Opened ${focusProduct.name}.`);
+            setSelectedProductId(focusProduct.id);
+          }
+        }}
         />
         <StatCard
           label="Average rating"
           value={rating ? rating.toFixed(1) : '—'}
           hint="Buyer feedback"
           icon="⭐"
-          tone="info"
-          onPress={() => {
-            setSortBy('featured');
-          }}
-        />
+        tone="info"
+        onPress={() => {
+          setSortBy('featured');
+          notify('info', 'Sorted products by featured first.');
+        }}
+      />
       </View>
+
+      {currentUser?.role === 'buyer' ? (
+        <Card style={styles.cartPanel}>
+          <SectionHeader
+            eyebrow="Cart"
+            title={`Your cart (${cartItemCount} item${cartItemCount === 1 ? '' : 's'})`}
+            subtitle="Add products here first, then pay once you’re ready."
+            action={
+              cartLineItems.length > 0 ? (
+                <Button
+                  label="Clear cart"
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => {
+                    clearCart();
+                    setCartNote('');
+                  }}
+                />
+              ) : null
+            }
+          />
+
+          {cartLineItems.length === 0 ? (
+            <EmptyState
+              title="Your cart is empty"
+              description="Tap Add to cart on any product card to start building your order."
+              icon="🧺"
+            />
+          ) : (
+            <>
+              <View style={styles.cartList}>
+                {cartLineItems.map((lineItem) => (
+                  <Card key={lineItem.product.id} style={styles.cartItem}>
+                    <View style={styles.cartItemTopRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.cartItemTitle}>{lineItem.product.name}</Text>
+                        <Text style={styles.cartItemMeta}>
+                          {formatLeones(lineItem.product.price)} · {lineItem.product.unit} · {lineItem.product.location}
+                        </Text>
+                      </View>
+                      <Badge label={`${lineItem.quantity} in cart`} tone="primary" />
+                    </View>
+
+                    <View style={styles.cartItemControls}>
+                      <Button
+                        label="−"
+                        variant="secondary"
+                        size="sm"
+                        onPress={() => updateCartItemQuantity(lineItem.product.id, lineItem.quantity - 1)}
+                        style={styles.quantityButton}
+                      />
+                      <Button
+                        label="+"
+                        variant="secondary"
+                        size="sm"
+                        onPress={() => updateCartItemQuantity(lineItem.product.id, lineItem.quantity + 1)}
+                        style={styles.quantityButton}
+                      />
+                      <Button
+                        label="Remove"
+                        variant="ghost"
+                        size="sm"
+                        onPress={() => removeCartItem(lineItem.product.id)}
+                      />
+                    </View>
+
+                    <Text style={styles.cartLineTotal}>
+                      Line total: {formatLeones(lineItem.lineTotal)}
+                    </Text>
+                  </Card>
+                ))}
+              </View>
+
+              <View style={styles.cartSummaryRow}>
+                <View style={styles.cartSummaryBox}>
+                  <Text style={styles.cartSummaryLabel}>Items</Text>
+                  <Text style={styles.cartSummaryValue}>{cartItemCount}</Text>
+                </View>
+                <View style={styles.cartSummaryBox}>
+                  <Text style={styles.cartSummaryLabel}>Estimated total</Text>
+                  <Text style={styles.cartSummaryValue}>{formatLeones(cartTotal)}</Text>
+                </View>
+              </View>
+
+              <View style={styles.optionGroup}>
+                <Text style={styles.sectionLabel}>Payment method</Text>
+                <View style={styles.chipRow}>
+                  {paymentMethods.map((method) => (
+                    <Chip
+                      key={method}
+                      label={method}
+                      active={cartPaymentMethod === method}
+                      onPress={() => setCartPaymentMethod(method)}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.optionGroup}>
+                <Text style={styles.sectionLabel}>Delivery method</Text>
+                <View style={styles.chipRow}>
+                  {deliveryMethods.map((method) => (
+                    <Chip
+                      key={method}
+                      label={method}
+                      active={cartDeliveryMethod === method}
+                      onPress={() => setCartDeliveryMethod(method)}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <Input
+                label="Cart note"
+                placeholder="Any special instructions for the full cart"
+                value={cartNote}
+                onChangeText={setCartNote}
+                multiline
+                numberOfLines={3}
+                style={styles.cartNoteField}
+              />
+
+              {cartPaymentMethod === 'Secure Card Checkout' && cartLineItems.length > 1 ? (
+                <Callout
+                  title="Card checkout limit"
+                  description="Stripe checkout currently supports one cart item at a time. Use Mobile Money, Bank Transfer, or Cash on Delivery for a multi-item cart."
+                  tone="warning"
+                />
+              ) : (
+                <Callout
+                  title="Cart checkout ready"
+                  description="Proceed when you’re happy with the products, quantities, and delivery choice."
+                  tone="info"
+                />
+              )}
+
+              <Button
+                label="Proceed to payment"
+                onPress={checkoutCart}
+                disabled={cartPaymentMethod === 'Secure Card Checkout' && cartLineItems.length > 1}
+                style={styles.checkoutButton}
+              />
+            </>
+          )}
+        </Card>
+      ) : null}
 
       <Card style={styles.panel}>
         <SearchField
@@ -296,7 +553,10 @@ export function MarketplaceScreen() {
             {featuredProducts.map((product) => (
               <Pressable
                 key={product.id}
-                onPress={() => setSelectedProductId(product.id)}
+                onPress={() => {
+                  notify('info', `Opened ${product.name}.`);
+                  setSelectedProductId(product.id);
+                }}
                 style={({ pressed }) => [styles.featuredCard, pressed && { opacity: 0.92 }]}
               >
                 <ProductMedia uri={product.imageUrl} title={product.name} category={product.category} />
@@ -326,7 +586,10 @@ export function MarketplaceScreen() {
           visibleProducts.map((product) => (
             <Pressable
               key={product.id}
-              onPress={() => setSelectedProductId(product.id)}
+              onPress={() => {
+                notify('info', `Opened ${product.name}.`);
+                setSelectedProductId(product.id);
+              }}
               style={({ pressed }) => [
                 styles.productCardWrap,
                 { flexBasis: cardBasis },
@@ -371,10 +634,22 @@ export function MarketplaceScreen() {
                   </View>
                 </View>
 
+                {currentUser?.role === 'buyer' ? (
+                  <Button
+                    label="Add to cart"
+                    variant="accent"
+                    onPress={() => addProductToCart(product, 1)}
+                    style={styles.addButton}
+                  />
+                ) : null}
+
                 <Button
                   label="View details"
                   variant="secondary"
-                  onPress={() => setSelectedProductId(product.id)}
+                  onPress={() => {
+                    notify('info', `Viewing ${product.name}.`);
+                    setSelectedProductId(product.id);
+                  }}
                   style={styles.viewButton}
                 />
               </Card>
@@ -383,7 +658,15 @@ export function MarketplaceScreen() {
         )}
       </View>
 
-      <Modal visible={Boolean(selectedProduct)} animationType="slide" transparent onRequestClose={() => setSelectedProductId(null)}>
+      <Modal
+        visible={Boolean(selectedProduct)}
+        animationType="slide"
+        transparent
+        onRequestClose={() => {
+          notify('info', 'Closed product details.');
+          setSelectedProductId(null);
+        }}
+      >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalSheet}>
             <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
@@ -396,7 +679,14 @@ export function MarketplaceScreen() {
                         {selectedProduct.farmerName} • {selectedProduct.location}
                       </Text>
                     </View>
-                    <Button label="Close" variant="ghost" onPress={() => setSelectedProductId(null)} />
+                    <Button
+                      label="Back"
+                      variant="ghost"
+                      onPress={() => {
+                        notify('info', 'Closed product details.');
+                        setSelectedProductId(null);
+                      }}
+                    />
                   </View>
 
                   <ProductMedia
@@ -511,7 +801,15 @@ export function MarketplaceScreen() {
                         tone="info"
                       />
 
-                      <Button label="Place order" onPress={submitOrder} style={styles.orderButton} />
+                      <View style={styles.modalActionRow}>
+                        <Button
+                          label="Add to cart"
+                          variant="secondary"
+                          onPress={() => addProductToCart(selectedProduct, Number(quantity || 1))}
+                          style={styles.flex}
+                        />
+                        <Button label="Buy now" onPress={submitOrder} style={styles.flex} />
+                      </View>
                     </Card>
                   ) : (
                     <Callout
@@ -572,6 +870,68 @@ const styles = StyleSheet.create({
   },
   panel: {
     gap: spacing.md
+  },
+  cartPanel: {
+    gap: spacing.lg
+  },
+  cartList: {
+    gap: spacing.md
+  },
+  cartItem: {
+    gap: spacing.md,
+    backgroundColor: colors.surfaceSoft
+  },
+  cartItemTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md
+  },
+  cartItemTitle: {
+    color: colors.text,
+    fontSize: typeScale.md,
+    fontWeight: weights.bold
+  },
+  cartItemMeta: {
+    color: colors.muted,
+    fontSize: typeScale.sm,
+    marginTop: 4
+  },
+  cartItemControls: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm
+  },
+  quantityButton: {
+    minWidth: 44
+  },
+  cartLineTotal: {
+    color: colors.primaryDark,
+    fontSize: typeScale.sm,
+    fontWeight: weights.semibold
+  },
+  cartSummaryRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    flexWrap: 'wrap'
+  },
+  cartSummaryBox: {
+    flex: 1,
+    minWidth: 160,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceSoft,
+    padding: spacing.md
+  },
+  cartSummaryLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  cartSummaryValue: {
+    color: colors.primaryDark,
+    fontSize: typeScale.xl,
+    fontWeight: weights.bold,
+    marginTop: 4
   },
   filterGroup: {
     gap: spacing.sm
@@ -681,6 +1041,12 @@ const styles = StyleSheet.create({
   viewButton: {
     alignSelf: 'flex-start'
   },
+  addButton: {
+    alignSelf: 'stretch'
+  },
+  checkoutButton: {
+    alignSelf: 'stretch'
+  },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(8, 18, 10, 0.42)',
@@ -714,6 +1080,11 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: typeScale.sm,
     marginTop: 4
+  },
+  modalActionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    flexWrap: 'wrap'
   },
   modalImage: {
     borderRadius: 20
@@ -789,6 +1160,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   noteField: {
+    marginTop: 4
+  },
+  cartNoteField: {
     marginTop: 4
   },
   orderButton: {

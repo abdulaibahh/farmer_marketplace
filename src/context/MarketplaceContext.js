@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import { Linking } from 'react-native';
 import { paymentMethods, deliveryMethods } from '../data/catalog';
 import { api, hasApiBaseUrl } from '../services/api';
-import { clearToken, loadToken, saveToken } from '../services/storage';
+import { clearCart, clearToken, loadCart, loadToken, saveCart, saveToken } from '../services/storage';
 import { averageScore } from '../utils/format';
 
 const MarketplaceContext = createContext(null);
@@ -13,6 +13,23 @@ function toDate(value) {
 
 function sortNewest(items) {
   return [...items].sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt));
+}
+
+function normalizeCartItems(items) {
+  const grouped = new Map();
+
+  for (const item of Array.isArray(items) ? items : []) {
+    const productId = item?.productId;
+    const quantity = Math.max(1, Math.floor(Number(item?.quantity || 1)));
+
+    if (!productId) {
+      continue;
+    }
+
+    grouped.set(productId, (grouped.get(productId) || 0) + quantity);
+  }
+
+  return Array.from(grouped, ([productId, quantity]) => ({ productId, quantity }));
 }
 
 function computeAnalytics({ users, products, orders }) {
@@ -52,10 +69,12 @@ export function MarketplaceProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const authTokenRef = useRef(null);
+  const [cartReady, setCartReady] = useState(false);
 
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
@@ -165,6 +184,32 @@ export function MarketplaceProvider({ children }) {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      const storedCart = await loadCart();
+      if (!mounted) {
+        return;
+      }
+
+      setCartItems(normalizeCartItems(storedCart));
+      setCartReady(true);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!cartReady) {
+      return;
+    }
+
+    void saveCart(cartItems);
+  }, [cartItems, cartReady]);
 
   useEffect(() => {
     let mounted = true;
@@ -281,6 +326,8 @@ export function MarketplaceProvider({ children }) {
     setReviews([]);
     authTokenRef.current = null;
     await clearToken();
+    await clearCart();
+    setCartItems([]);
     notify('info', 'You have been signed out.');
   };
 
@@ -411,7 +458,7 @@ export function MarketplaceProvider({ children }) {
     }
   };
 
-  const placeOrder = async (payload) => {
+  const placeOrder = async (payload, options = {}) => {
     if (!currentUser || currentUser.role !== 'buyer' || !authTokenRef.current) {
       notify('warning', 'Only buyers can place orders.');
       return false;
@@ -438,16 +485,114 @@ export function MarketplaceProvider({ children }) {
         note: payload.note || ''
       });
       applyResponse(result);
-      if (result.checkoutUrl) {
-        Linking.openURL(result.checkoutUrl).catch(() => {});
-        notify('info', 'Secure checkout opened in your browser.');
-      } else {
-        notify('success', 'Order placed successfully.');
+      if (!options.silent) {
+        if (result.checkoutUrl && options.openCheckout !== false) {
+          Linking.openURL(result.checkoutUrl).catch(() => {});
+          notify('info', 'Secure checkout opened in your browser.');
+        } else if (!result.checkoutUrl) {
+          notify('success', 'Order placed successfully.');
+        } else {
+          notify('success', 'Order added to your payment queue.');
+        }
       }
-      return true;
+      return result;
     } catch (error) {
       return handleRemoteError(error, 'Unable to place the order right now.');
     }
+  };
+
+  const addToCart = async (productId, quantity = 1) => {
+    if (!currentUser || currentUser.role !== 'buyer') {
+      notify('warning', 'Only buyers can build a cart.');
+      return false;
+    }
+
+    const product = products.find((candidate) => candidate.id === productId);
+    if (!product || !product.isVisible || !product.isAvailable) {
+      notify('danger', 'That product is not available right now.');
+      return false;
+    }
+
+    if (Number(product.quantity || 0) <= 0) {
+      notify('warning', 'That product is out of stock.');
+      return false;
+    }
+
+    const safeQuantity = Math.max(1, Math.floor(Number(quantity || 1)));
+    const currentQuantity = cartItems.find((item) => item.productId === productId)?.quantity || 0;
+    const nextQuantity = Math.min(product.quantity, currentQuantity + safeQuantity);
+
+    if (nextQuantity <= 0) {
+      notify('warning', 'There is no stock available for that product.');
+      return false;
+    }
+
+    setCartItems((current) => {
+      const next = current.filter((item) => item.productId !== productId);
+      next.push({ productId, quantity: nextQuantity });
+      return normalizeCartItems(next);
+    });
+
+    if (currentQuantity > 0) {
+      notify('success', `${product.name} quantity updated in your cart.`);
+    } else {
+      notify('success', `${product.name} added to your cart.`);
+    }
+
+    return true;
+  };
+
+  const updateCartItemQuantity = async (productId, quantity) => {
+    if (!currentUser || currentUser.role !== 'buyer') {
+      return false;
+    }
+
+    const product = products.find((candidate) => candidate.id === productId);
+    if (!product) {
+      return false;
+    }
+
+    if (Number(product.quantity || 0) <= 0) {
+      await removeCartItem(productId);
+      notify('warning', 'That product is out of stock.');
+      return false;
+    }
+
+    const requestedQuantity = Math.floor(Number(quantity || 1));
+    if (requestedQuantity <= 0) {
+      return removeCartItem(productId);
+    }
+
+    const nextQuantity = Math.min(product.quantity, requestedQuantity);
+
+    setCartItems((current) =>
+      normalizeCartItems(
+        current.map((item) => (item.productId === productId ? { ...item, quantity: nextQuantity } : item))
+      )
+    );
+
+    notify('info', `${product.name} quantity set to ${nextQuantity}.`);
+    return true;
+  };
+
+  const removeCartItem = async (productId) => {
+    if (!currentUser || currentUser.role !== 'buyer') {
+      return false;
+    }
+
+    const product = products.find((candidate) => candidate.id === productId);
+    setCartItems((current) => current.filter((item) => item.productId !== productId));
+    if (product) {
+      notify('info', `${product.name} removed from your cart.`);
+    }
+    return true;
+  };
+
+  const clearCartItems = async () => {
+    setCartItems([]);
+    await clearCart();
+    notify('info', 'Your cart is empty now.');
+    return true;
   };
 
   const confirmOrder = async (orderId) => {
@@ -552,8 +697,10 @@ export function MarketplaceProvider({ children }) {
       toast,
       analytics,
       currentProducts,
+      cartItems,
       paymentMethods,
       deliveryMethods,
+      notify,
       signIn,
       register,
       signOut,
@@ -564,6 +711,10 @@ export function MarketplaceProvider({ children }) {
       restoreProduct,
       toggleProductAvailability,
       placeOrder,
+      addToCart,
+      updateCartItemQuantity,
+      removeCartItem,
+      clearCart: clearCartItems,
       confirmOrder,
       deliverOrder,
       addReview,
@@ -572,7 +723,10 @@ export function MarketplaceProvider({ children }) {
     [
       addProduct,
       addReview,
+      addToCart,
       analytics,
+      cartItems,
+      clearCartItems,
       confirmOrder,
       currentProducts,
       currentUser,
@@ -580,10 +734,12 @@ export function MarketplaceProvider({ children }) {
       deliveryMethods,
       orders,
       paymentMethods,
+      notify,
       placeOrder,
       products,
       register,
       removeProduct,
+      removeCartItem,
       restoreProduct,
       reviews,
       signIn,
@@ -591,6 +747,7 @@ export function MarketplaceProvider({ children }) {
       toast,
       toggleProductAvailability,
       toggleUserStatus,
+      updateCartItemQuantity,
       updateProfile,
       updateProduct,
       users,

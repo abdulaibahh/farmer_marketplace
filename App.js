@@ -52,8 +52,9 @@ const tabs = [
 ];
 
 function AppShell() {
-  const { currentUser, toast, analytics, signOut } = useMarketplace();
+  const { currentUser, toast, analytics, signOut, notify } = useMarketplace();
   const [activeTab, setActiveTab] = useState('market');
+  const [navHistory, setNavHistory] = useState([]);
   const { width } = useWindowDimensions();
   const isWide = width >= 980;
 
@@ -64,6 +65,10 @@ function AppShell() {
   const adminFallbackTab = currentUser?.role === 'admin' ? 'admin' : 'orders';
 
   useEffect(() => {
+    setNavHistory([]);
+  }, [currentUser?.id]);
+
+  useEffect(() => {
     if (!currentUser) {
       return;
     }
@@ -72,6 +77,37 @@ function AppShell() {
       setActiveTab(availableTabs[0]?.id || 'market');
     }
   }, [activeTab, availableTabs, currentUser]);
+
+  const navigateToTab = (nextTab) => {
+    const targetTab = availableTabs.find((tab) => tab.id === nextTab);
+
+    if (!targetTab) {
+      return;
+    }
+
+    if (nextTab === activeTab) {
+      notify('info', `${targetTab.label} is already open.`);
+      return;
+    }
+
+    setNavHistory((history) => [...history, activeTab]);
+    setActiveTab(nextTab);
+    notify('info', `Opened ${targetTab.label}.`);
+  };
+
+  const goBack = () => {
+    setNavHistory((history) => {
+      if (!history.length) {
+        return history;
+      }
+
+      const previousTab = history[history.length - 1];
+      const previousLabel = tabs.find((tab) => tab.id === previousTab)?.label || previousTab;
+      setActiveTab(previousTab);
+      notify('info', `Returned to ${previousLabel}.`);
+      return history.slice(0, -1);
+    });
+  };
 
   return (
     <SafeAreaView style={styles.shell}>
@@ -104,12 +140,14 @@ function AppShell() {
 
                   <View style={[styles.topNav, isWide && styles.topNavWide]}>
                     <View style={styles.topNavBrandRow}>
-                      <View style={{ flex: 1 }}>
-                      <Text style={styles.topNavEyebrow}>Farmer Marketplace</Text>
-                      <Text style={styles.topNavTitle}>Live trade, clean design, fast checkout</Text>
+                      {navHistory.length > 0 ? (
+                        <Button label="Back" variant="ghost" size="sm" onPress={goBack} style={styles.topNavBackButton} />
+                      ) : null}
+                      <View style={styles.topNavBrandCopy}>
+                        <Text style={styles.topNavEyebrow}>Farmer Marketplace</Text>
+                        <Text style={styles.topNavTitle}>Live trade, clean design, fast checkout</Text>
+                      </View>
                     </View>
-                    <Badge label="Backend live" tone="success" />
-                  </View>
 
                   <View style={styles.topNavChips}>
                     {availableTabs.map((tab) => (
@@ -117,7 +155,7 @@ function AppShell() {
                         key={tab.id}
                         label={tab.label}
                         active={tab.id === activeTab}
-                        onPress={() => setActiveTab(tab.id)}
+                        onPress={() => navigateToTab(tab.id)}
                       />
                     ))}
                   </View>
@@ -143,7 +181,7 @@ function AppShell() {
                       hint="Tap to browse"
                       icon="🛒"
                       tone="primary"
-                      onPress={() => setActiveTab('market')}
+                      onPress={() => navigateToTab('market')}
                     />
                     <StatCard
                       label="Order revenue"
@@ -151,7 +189,7 @@ function AppShell() {
                       hint="Tap to review"
                       icon="💰"
                       tone="accent"
-                      onPress={() => setActiveTab('orders')}
+                      onPress={() => navigateToTab('orders')}
                     />
                     <StatCard
                       label="Pending tasks"
@@ -159,7 +197,7 @@ function AppShell() {
                       hint={currentUser.role === 'admin' ? 'Tap admin tools' : 'Tap orders'}
                       icon="⏳"
                       tone="info"
-                      onPress={() => setActiveTab(adminFallbackTab)}
+                      onPress={() => navigateToTab(adminFallbackTab)}
                     />
                   </View>
 
@@ -188,7 +226,7 @@ function AppShell() {
                     return (
                       <Pressable
                         key={tab.id}
-                        onPress={() => setActiveTab(tab.id)}
+                        onPress={() => navigateToTab(tab.id)}
                         style={({ pressed, hovered, focused }) => [
                           styles.tabItem,
                           active && styles.tabItemActive,
@@ -297,6 +335,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md
+  },
+  topNavBackButton: {
+    alignSelf: 'flex-start'
+  },
+  topNavBrandCopy: {
+    flex: 1
   },
   topNavEyebrow: {
     color: colors.primaryDark,
