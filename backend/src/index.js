@@ -720,6 +720,14 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, service: 'farmer-marketplace-api' });
 });
 
+app.get('/', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'farmer-marketplace-api',
+    health: '/health'
+  });
+});
+
 app.post(
   '/auth/register',
   asyncHandler(async (req, res) => {
