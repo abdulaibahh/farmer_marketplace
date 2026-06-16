@@ -1,0 +1,423 @@
+{"kind":"deck","id":"pr/pwn6hp","name":"Deck"}
+{"kind":"layout","layoutId":"17412233-9da1-4a31-9616-b2555b448d8b","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"6bbfd972-acbf-4ad1-a1cf-357dd4c3489a","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/a7kgqh","slide":1,"title":"FARMER MARKETPLACE","textShapes":19}
+{"kind":"shape","id":"sh/zed8v6ps","slide":1,"bbox":[820,-48,460,460]}
+{"kind":"shape","id":"sh/oza1gvy9","slide":1,"bbox":[980,400,320,320]}
+{"kind":"shape","id":"sh/hk3q5o7q","slide":1,"bbox":[64,64,200,30]}
+{"kind":"textbox","id":"sh/65wjudg7","slide":1,"text":"FARMER MARKETPLACE","textPreview":"FARMER MARKETPLACE","textChars":18,"textLines":1,"bbox":[72,66,184,26]}
+{"kind":"textbox","id":"sh/zqtcj6to","slide":1,"text":"Direct trade for farmers and buyers.","textPreview":"Direct trade for farmers and buyers.","textChars":36,"textLines":1,"bbox":[64,108,548,190]}
+{"kind":"textbox","id":"sh/obm58z25","slide":1,"text":"A production-ready mobile commerce system for Sierra Leone with polished UI, PostgreSQL persistence, Stripe checkout, and admin moderation.","textPreview":"A production-ready mobile commerce system for Sierra Leone with polished UI, PostgreSQL persistence, Stripe checkout, and admin moderation.","textChars":139,"textLines":1,"bbox":[64,302,560,96]}
+{"kind":"shape","id":"sh/hwfyxobm","slide":1,"bbox":[64,420,148,34]}
+{"kind":"textbox","id":"sh/a9w3m94f","slide":1,"text":"Expo mobile app","textPreview":"Expo mobile app","textChars":15,"textLines":1,"bbox":[72,422,132,30]}
+{"kind":"shape","id":"sh/zupwb2hw","slide":1,"bbox":[224,420,170,34]}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":1,"text":"PostgreSQL backend","textPreview":"PostgreSQL backend","textChars":18,"textLines":1,"bbox":[232,422,154,30]}
+{"kind":"shape","id":"sh/ed8v6psf","slide":1,"bbox":[406,420,150,34]}
+{"kind":"textbox","id":"sh/p4r65wju","slide":1,"text":"Stripe checkout","textPreview":"Stripe checkout","textChars":15,"textLines":1,"bbox":[414,422,134,30]}
+{"kind":"shape","id":"sh/wjudg7ad","slide":1,"bbox":[64,464,166,34]}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":1,"text":"Responsive UI","textPreview":"Responsive UI","textChars":13,"textLines":1,"bbox":[72,466,150,30]}
+{"kind":"shape","id":"sh/i5sneloj","slide":1,"bbox":[242,464,176,34]}
+{"kind":"textbox","id":"sh/pwb2hwfy","slide":1,"text":"Render + Netlify","textPreview":"Render + Netlify","textChars":16,"textLines":1,"bbox":[250,466,160,30]}
+{"kind":"shape","id":"sh/0bi9s36h","slide":1,"bbox":[430,464,154,34]}
+{"kind":"textbox","id":"sh/7ed8bat4","slide":1,"text":"Admin tools","textPreview":"Admin tools","textChars":11,"textLines":1,"bbox":[438,466,138,30]}
+{"kind":"textbox","id":"sh/itgfmlkj","slide":1,"text":"Mobile-first commerce, secure payment flows, and a clean submission story in one deck.","textPreview":"Mobile-first commerce, secure payment flows, and a clean submission story in one deck.","textChars":86,"textLines":1,"bbox":[64,548,490,56]}
+{"kind":"shape","id":"sh/qtcj6tov","slide":1,"bbox":[684,70,540,578]}
+{"kind":"shape","id":"sh/je9cvixc","slide":1,"bbox":[706,92,236,160]}
+{"kind":"shape","id":"sh/8z25kb6x","slide":1,"bbox":[722,106,6,132]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":1,"text":"Buyer path","textPreview":"Buyer path","textChars":10,"textLines":1,"bbox":[738,110,188,28]}
+{"kind":"textbox","id":"sh/q1orytsv","slide":1,"text":"Browse, compare, add to cart, and pay with confidence.","textPreview":"Browse, compare, add to cart, and pay with confidence.","textChars":54,"textLines":1,"bbox":[738,146,188,84]}
+{"kind":"shape","id":"sh/fmlkjm1c","slide":1,"bbox":[966,92,236,160]}
+{"kind":"shape","id":"sh/87ed8bat","slide":1,"bbox":[982,106,6,132]}
+{"kind":"textbox","id":"sh/xs72x4na","slide":1,"text":"Farmer path","textPreview":"Farmer path","textChars":11,"textLines":1,"bbox":[998,110,188,28]}
+{"kind":"textbox","id":"sh/qd4vmtwr","slide":1,"text":"List produce, manage stock, and follow orders in real time.","textPreview":"List produce, manage stock, and follow orders in real time.","textChars":59,"textLines":1,"bbox":[998,146,188,84]}
+{"kind":"shape","id":"sh/fyxobm58","slide":1,"bbox":[706,278,236,160]}
+{"kind":"shape","id":"sh/5wjudg7a","slide":1,"bbox":[722,292,6,132]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":1,"text":"Secure checkout","textPreview":"Secure checkout","textChars":15,"textLines":1,"bbox":[738,296,188,28]}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":1,"text":"Stripe card checkout plus mobile-money and manual options.","textPreview":"Stripe card checkout plus mobile-money and manual options.","textChars":58,"textLines":1,"bbox":[738,332,188,84]}
+{"kind":"shape","id":"sh/y90je9cv","slide":1,"bbox":[966,278,236,160]}
+{"kind":"shape","id":"sh/58z25kb6","slide":1,"bbox":[982,292,6,132]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":1,"text":"Deployment ready","textPreview":"Deployment ready","textChars":16,"textLines":1,"bbox":[998,296,188,28]}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":1,"text":"Render API, Neon PostgreSQL, and Netlify web frontend.","textPreview":"Render API, Neon PostgreSQL, and Netlify web frontend.","textChars":54,"textLines":1,"bbox":[998,332,188,84]}
+{"kind":"shape","id":"sh/yhgn29gr","slide":1,"bbox":[1080,574,108,30]}
+{"kind":"textbox","id":"sh/5kb6xkf6","slide":1,"text":"10 slides","textPreview":"10 slides","textChars":9,"textLines":1,"bbox":[1088,576,92,26]}
+{"kind":"notes","id":"nt/a7kgqh","slide":1,"text":""}
+{"kind":"slide","id":"sl/xdgsap","slide":2,"title":"PROJECT BRIEF","textShapes":16}
+{"kind":"shape","id":"sh/jm1cfa9w","slide":2,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/c7u54zid","slide":2,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/1orytsvu","slide":2,"text":"PROJECT BRIEF","textPreview":"PROJECT BRIEF","textChars":13,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":2,"text":"The brief turns into a working commerce flow.","textPreview":"The brief turns into a working commerce flow.","textChars":45,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/judg7ads","slide":2,"text":"The deck follows the assignment requirements: mobile app, backend system, payment integration, and deployment.","textPreview":"The deck follows the assignment requirements: mobile app, backend system, payment integration, and deployment.","textChars":110,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/cfa9w3m9","slide":2,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/1032lszq","slide":2,"text":"02 / 10","textPreview":"02 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":2,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/nyd0z610","slide":2,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/v6psfil0","slide":2,"text":"02 / 10","textPreview":"02 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/2lszqtcj","slide":2,"bbox":[36,176,520,468]}
+{"kind":"shape","id":"sh/d8bat47y","slide":2,"bbox":[52,190,6,440]}
+{"kind":"textbox","id":"sh/knih4byh","slide":2,"text":"Minimum app screens","textPreview":"Minimum app screens","textChars":19,"textLines":1,"bbox":[68,194,472,28]}
+{"kind":"textbox","id":"sh/vu9knih4","slide":2,"text":"• Splash screen\n• Login / Register\n• Home product listing\n• Product details\n• Cart and checkout\n• Farmer dashboard\n• Order history","textPreview":"• Splash screen | • Login / Register | • Home product listing | • Product details | • Cart and checkout | • Farmer dashboard | • Order hi...","textChars":130,"textLines":7,"bbox":[68,244,472,360]}
+{"kind":"shape","id":"sh/29gr2p8n","slide":2,"bbox":[588,176,270,214]}
+{"kind":"shape","id":"sh/d0z61032","slide":2,"bbox":[604,190,6,186]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":2,"text":"Working application","textPreview":"Working application","textChars":19,"textLines":1,"bbox":[620,194,222,28]}
+{"kind":"textbox","id":"sh/vixczed8","slide":2,"text":"Transform the brief into a real mobile commerce app.","textPreview":"Transform the brief into a real mobile commerce app.","textChars":52,"textLines":1,"bbox":[620,234,222,136]}
+{"kind":"shape","id":"sh/2x4nap4r","slide":2,"bbox":[886,176,356,214]}
+{"kind":"shape","id":"sh/ex0nuxc3","slide":2,"bbox":[902,190,6,186]}
+{"kind":"textbox","id":"sh/3itgfmlk","slide":2,"text":"Backend and persistence","textPreview":"Backend and persistence","textChars":23,"textLines":1,"bbox":[918,194,308,28]}
+{"kind":"textbox","id":"sh/w3m94fu1","slide":2,"text":"Use Express and PostgreSQL so the app keeps users, products, orders, and payments.","textPreview":"Use Express and PostgreSQL so the app keeps users, products, orders, and payments.","textChars":82,"textLines":1,"bbox":[918,234,308,136]}
+{"kind":"shape","id":"sh/loj2t83i","slide":2,"bbox":[588,414,270,230]}
+{"kind":"shape","id":"sh/e9cvixcz","slide":2,"bbox":[604,428,6,202]}
+{"kind":"textbox","id":"sh/3q5o7qpg","slide":2,"text":"Real payment flow","textPreview":"Real payment flow","textChars":17,"textLines":1,"bbox":[620,432,222,28]}
+{"kind":"textbox","id":"sh/wb2hwfyx","slide":2,"text":"Stripe test checkout plus simulated mobile-money and manual payment methods.","textPreview":"Stripe test checkout plus simulated mobile-money and manual payment methods.","textChars":76,"textLines":1,"bbox":[620,472,222,152]}
+{"kind":"shape","id":"sh/lwval87e","slide":2,"bbox":[886,414,356,230]}
+{"kind":"shape","id":"sh/ahoza1gv","slide":2,"bbox":[902,428,6,202]}
+{"kind":"textbox","id":"sh/32lszqtc","slide":2,"text":"Presentation ready","textPreview":"Presentation ready","textChars":18,"textLines":1,"bbox":[918,432,308,28]}
+{"kind":"textbox","id":"sh/t47y1kre","slide":2,"text":"Deployment notes, documentation, and a clear demo path for the panel.","textPreview":"Deployment notes, documentation, and a clear demo path for the panel.","textChars":69,"textLines":1,"bbox":[918,472,308,152]}
+{"kind":"notes","id":"nt/xdgsap","slide":2,"text":""}
+{"kind":"slide","id":"sl/4vbrsc","slide":3,"title":"ARCHITECTURE","textShapes":25}
+{"kind":"shape","id":"sh/i5sneloj","slide":3,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/pwb2hwfy","slide":3,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":3,"text":"ARCHITECTURE","textPreview":"ARCHITECTURE","textChars":12,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":3,"text":"One API, three layers.","textPreview":"One API, three layers.","textChars":22,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/ed8v6psf","slide":3,"text":"The frontend, backend, and database are separated so the app stays responsive and scalable.","textPreview":"The frontend, backend, and database are separated so the app stays responsive and scalable.","textChars":91,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/p4r65wju","slide":3,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":3,"text":"03 / 10","textPreview":"03 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":3,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/ih4byhgn","slide":3,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/032lszqt","slide":3,"text":"03 / 10","textPreview":"03 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/tovahoza","slide":3,"bbox":[48,210,336,254]}
+{"kind":"shape","id":"sh/ixczed8v","slide":3,"bbox":[64,224,6,226]}
+{"kind":"textbox","id":"sh/bi9s36hc","slide":3,"text":"Expo app","textPreview":"Expo app","textChars":8,"textLines":1,"bbox":[80,228,288,28]}
+{"kind":"textbox","id":"sh/0fepkzup","slide":3,"text":"• Role-based navigation\n• Product browsing and search\n• Cart, checkout, and dashboard screens\n• Responsive mobile + web UI","textPreview":"• Role-based navigation | • Product browsing and search | • Cart, checkout, and dashboard screens | • Responsive mobile + web UI","textChars":122,"textLines":4,"bbox":[80,278,288,150]}
+{"kind":"shape","id":"sh/p0bi9s36","slide":3,"bbox":[408,304,36,36]}
+{"kind":"textbox","id":"sh/i9s36hcr","slide":3,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[416,306,20,32]}
+{"kind":"shape","id":"sh/bulwval8","slide":3,"bbox":[456,210,336,254]}
+{"kind":"shape","id":"sh/0je9cvix","slide":3,"bbox":[472,224,6,226]}
+{"kind":"textbox","id":"sh/t47y1kre","slide":3,"text":"Express API","textPreview":"Express API","textChars":11,"textLines":1,"bbox":[488,228,288,28]}
+{"kind":"textbox","id":"sh/xobm58z2","slide":3,"text":"• JWT authentication\n• Product CRUD and order lifecycle\n• Reviews, analytics, and moderation\n• Stripe webhooks and checkout sessions","textPreview":"• JWT authentication | • Product CRUD and order lifecycle | • Reviews, analytics, and moderation | • Stripe webhooks and checkout sessions","textChars":132,"textLines":4,"bbox":[488,278,288,150]}
+{"kind":"shape","id":"sh/83itgfml","slide":3,"bbox":[816,304,36,36]}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":3,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[824,306,20,32]}
+{"kind":"shape","id":"sh/qxs72x4n","slide":3,"bbox":[864,210,368,254]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":3,"bbox":[880,224,6,226]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":3,"text":"PostgreSQL + Stripe","textPreview":"PostgreSQL + Stripe","textChars":19,"textLines":1,"bbox":[896,228,320,28]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":3,"text":"• Users, products, orders, and payments\n• Neon for production hosting\n• pgAdmin4-compatible schema\n• Secure hosted payment confirmation","textPreview":"• Users, products, orders, and payments | • Neon for production hosting | • pgAdmin4-compatible schema | • Secure hosted payment confirma...","textChars":135,"textLines":4,"bbox":[896,278,320,150]}
+{"kind":"shape","id":"sh/m94fu18j","slide":3,"bbox":[66,502,74,28]}
+{"kind":"textbox","id":"sh/xc3ylc7u","slide":3,"text":"Auth","textPreview":"Auth","textChars":4,"textLines":1,"bbox":[74,504,58,24]}
+{"kind":"shape","id":"sh/4r65wjud","slide":3,"bbox":[156,502,74,28]}
+{"kind":"textbox","id":"sh/ih4byhgn","slide":3,"text":"Catalog","textPreview":"Catalog","textChars":7,"textLines":1,"bbox":[164,504,58,24]}
+{"kind":"shape","id":"sh/72x4nap4","slide":3,"bbox":[256,502,74,28]}
+{"kind":"textbox","id":"sh/0nuxc3yl","slide":3,"text":"Orders","textPreview":"Orders","textChars":6,"textLines":1,"bbox":[264,504,58,24]}
+{"kind":"shape","id":"sh/p8nqxs72","slide":3,"bbox":[516,502,74,28]}
+{"kind":"textbox","id":"sh/itgfmlkj","slide":3,"text":"Payments","textPreview":"Payments","textChars":8,"textLines":1,"bbox":[524,504,58,24]}
+{"kind":"shape","id":"sh/7ed8bat4","slide":3,"bbox":[620,502,74,28]}
+{"kind":"textbox","id":"sh/0z61032l","slide":3,"text":"Reviews","textPreview":"Reviews","textChars":7,"textLines":1,"bbox":[628,504,58,24]}
+{"kind":"shape","id":"sh/pkzupwb2","slide":3,"bbox":[718,502,92,28]}
+{"kind":"textbox","id":"sh/i5sneloj","slide":3,"text":"Analytics","textPreview":"Analytics","textChars":9,"textLines":1,"bbox":[726,504,76,24]}
+{"kind":"shape","id":"sh/7qpg3ex0","slide":3,"bbox":[900,502,74,28]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":3,"text":"Neon DB","textPreview":"Neon DB","textChars":7,"textLines":1,"bbox":[908,504,58,24]}
+{"kind":"shape","id":"sh/2hwfyxob","slide":3,"bbox":[1000,502,74,28]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":3,"text":"Stripe","textPreview":"Stripe","textChars":6,"textLines":1,"bbox":[1008,504,58,24]}
+{"kind":"shape","id":"sh/kjm1cfa9","slide":3,"bbox":[1092,502,92,28]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":3,"text":"Moderation","textPreview":"Moderation","textChars":10,"textLines":1,"bbox":[1100,504,76,24]}
+{"kind":"shape","id":"sh/2p8nqxs7","slide":3,"bbox":[48,548,1184,86]}
+{"kind":"shape","id":"sh/9gr2p8nq","slide":3,"bbox":[64,562,6,58]}
+{"kind":"textbox","id":"sh/gvy90je9","slide":3,"text":"Main modules","textPreview":"Main modules","textChars":12,"textLines":1,"bbox":[80,566,1136,28]}
+{"kind":"textbox","id":"sh/re1w7mp0","slide":3,"text":"App.js • src/screens • src/context/MarketplaceContext.js • backend/src/index.js • database/schema.sql","textPreview":"App.js • src/screens • src/context/MarketplaceContext.js • backend/src/index.js • database/schema.sql","textChars":101,"textLines":1,"bbox":[80,578,1136,34]}
+{"kind":"notes","id":"nt/4vbrsc","slide":3,"text":""}
+{"kind":"slide","id":"sl/00atnn","slide":4,"title":"DATABASE","textShapes":22}
+{"kind":"shape","id":"sh/9knih4by","slide":4,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/2t83itgf","slide":4,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/re1w7mp0","slide":4,"text":"DATABASE","textPreview":"DATABASE","textChars":8,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":4,"text":"PostgreSQL keeps the marketplace stateful.","textPreview":"PostgreSQL keeps the marketplace stateful.","textChars":42,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/9w3m94fu","slide":4,"text":"The schema is designed for pgAdmin4 locally and Neon in production.","textPreview":"The schema is designed for pgAdmin4 locally and Neon in production.","textChars":67,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/25kb6xkf","slide":4,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/rqd4vmtw","slide":4,"text":"04 / 10","textPreview":"04 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":4,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/94fu18jq","slide":4,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/1orytsvu","slide":4,"text":"04 / 10","textPreview":"04 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/c7u54zid","slide":4,"bbox":[36,180,252,140]}
+{"kind":"shape","id":"sh/jm1cfa9w","slide":4,"bbox":[52,194,6,112]}
+{"kind":"textbox","id":"sh/u18jqh0f","slide":4,"text":"Users","textPreview":"Users","textChars":5,"textLines":1,"bbox":[68,198,204,28]}
+{"kind":"textbox","id":"sh/1032lszq","slide":4,"text":"role · profile · status · verification","textPreview":"role · profile · status · verification","textChars":38,"textLines":1,"bbox":[68,238,204,60]}
+{"kind":"shape","id":"sh/cfa9w3m9","slide":4,"bbox":[304,180,252,140]}
+{"kind":"shape","id":"sh/judg7ads","slide":4,"bbox":[320,194,6,112]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":4,"text":"Products","textPreview":"Products","textChars":8,"textLines":1,"bbox":[336,198,204,28]}
+{"kind":"textbox","id":"sh/54zidony","slide":4,"text":"farmer · price · stock · availability","textPreview":"farmer · price · stock · availability","textChars":37,"textLines":1,"bbox":[336,238,204,60]}
+{"kind":"shape","id":"sh/cj6tovah","slide":4,"bbox":[572,180,252,140]}
+{"kind":"shape","id":"sh/crmhk3q5","slide":4,"bbox":[588,194,6,112]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":4,"text":"Orders","textPreview":"Orders","textChars":6,"textLines":1,"bbox":[604,198,204,28]}
+{"kind":"textbox","id":"sh/ulwval87","slide":4,"text":"buyer · items · totals · lifecycle status","textPreview":"buyer · items · totals · lifecycle status","textChars":41,"textLines":1,"bbox":[604,238,204,60]}
+{"kind":"shape","id":"sh/j6tovaho","slide":4,"bbox":[36,344,252,140]}
+{"kind":"shape","id":"sh/c3ylc7u5","slide":4,"bbox":[52,358,6,112]}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":4,"text":"Payments","textPreview":"Payments","textChars":8,"textLines":1,"bbox":[68,362,204,28]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":4,"text":"method · provider · currency · reference","textPreview":"method · provider · currency · reference","textChars":40,"textLines":1,"bbox":[68,402,204,60]}
+{"kind":"shape","id":"sh/ji5snelo","slide":4,"bbox":[304,344,252,140]}
+{"kind":"shape","id":"sh/8bat47y1","slide":4,"bbox":[320,358,6,112]}
+{"kind":"textbox","id":"sh/1w7mp0bi","slide":4,"text":"Reviews","textPreview":"Reviews","textChars":7,"textLines":1,"bbox":[336,362,204,28]}
+{"kind":"textbox","id":"sh/7ed8bat4","slide":4,"text":"rating · comment · order link","textPreview":"rating · comment · order link","textChars":29,"textLines":1,"bbox":[336,402,204,60]}
+{"kind":"shape","id":"sh/itgfmlkj","slide":4,"bbox":[572,344,252,140]}
+{"kind":"shape","id":"sh/pkzupwb2","slide":4,"bbox":[588,358,6,112]}
+{"kind":"textbox","id":"sh/0z61032l","slide":4,"text":"Audit / notifications","textPreview":"Audit / notifications","textChars":21,"textLines":1,"bbox":[604,362,204,28]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":4,"text":"moderation events · alerts · timestamps","textPreview":"moderation events · alerts · timestamps","textChars":39,"textLines":1,"bbox":[604,402,204,60]}
+{"kind":"shape","id":"sh/ih4byhgn","slide":4,"bbox":[856,180,368,304]}
+{"kind":"shape","id":"sh/p8nqxs72","slide":4,"bbox":[872,194,6,276]}
+{"kind":"textbox","id":"sh/0nuxc3yl","slide":4,"text":"pgAdmin4 / Neon setup","textPreview":"pgAdmin4 / Neon setup","textChars":21,"textLines":1,"bbox":[888,198,320,28]}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":4,"text":"1. Create the farmer_marketplace database.\n2. Run database/schema.sql.\n3. Seed the initial admin account.\n4. Switch DATABASE_URL to Neon for production.","textPreview":"1. Create the farmer_marketplace database. | 2. Run database/schema.sql. | 3. Seed the initial admin account. | 4. Switch DATABASE_URL to...","textChars":152,"textLines":4,"bbox":[888,248,320,180]}
+{"kind":"shape","id":"sh/ed8v6psf","slide":4,"bbox":[856,510,170,30]}
+{"kind":"textbox","id":"sh/yd0z6103","slide":4,"text":"Production: Neon","textPreview":"Production: Neon","textChars":16,"textLines":1,"bbox":[864,512,154,26]}
+{"kind":"shape","id":"sh/rytsvu9k","slide":4,"bbox":[1040,510,184,30]}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":4,"text":"Local: pgAdmin4","textPreview":"Local: pgAdmin4","textChars":15,"textLines":1,"bbox":[1048,512,168,26]}
+{"kind":"notes","id":"nt/00atnn","slide":4,"text":""}
+{"kind":"slide","id":"sl/hgqv3a","slide":5,"title":"FRONTEND","textShapes":19}
+{"kind":"shape","id":"sh/c3ylc7u5","slide":5,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/ji5snelo","slide":5,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":5,"text":"FRONTEND","textPreview":"FRONTEND","textChars":8,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":5,"text":"Every core screen is designed for taps.","textPreview":"Every core screen is designed for taps.","textChars":39,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":5,"text":"The app covers the required buyer and farmer screens and keeps navigation simple.","textPreview":"The app covers the required buyer and farmer screens and keeps navigation simple.","textChars":81,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/j6tovaho","slide":5,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/ulwval87","slide":5,"text":"05 / 10","textPreview":"05 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/18jqh0fe","slide":5,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/8nqxs72x","slide":5,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/al87ed8b","slide":5,"text":"05 / 10","textPreview":"05 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/z61032ls","slide":5,"bbox":[36,178,352,156]}
+{"kind":"shape","id":"sh/orytsvu9","slide":5,"bbox":[52,192,6,128]}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":5,"text":"Splash","textPreview":"Splash","textChars":6,"textLines":1,"bbox":[68,196,304,28]}
+{"kind":"textbox","id":"sh/a9w3m94f","slide":5,"text":"Brand moment\nfast launch\nclean first impression","textPreview":"Brand moment | fast launch | clean first impression","textChars":47,"textLines":3,"bbox":[68,234,304,72]}
+{"kind":"shape","id":"sh/zupwb2hw","slide":5,"bbox":[302,196,58,10]}
+{"kind":"shape","id":"sh/sfil0rqd","slide":5,"bbox":[308,306,46,10]}
+{"kind":"shape","id":"sh/h0fepkzu","slide":5,"bbox":[428,178,352,156]}
+{"kind":"shape","id":"sh/65wjudg7","slide":5,"bbox":[444,192,6,128]}
+{"kind":"textbox","id":"sh/zqtcj6to","slide":5,"text":"Login / Register","textPreview":"Login / Register","textChars":16,"textLines":1,"bbox":[460,196,304,28]}
+{"kind":"textbox","id":"sh/byhgn29g","slide":5,"text":"Sign in\ncreate account\nrole selection","textPreview":"Sign in | create account | role selection","textChars":37,"textLines":3,"bbox":[460,234,304,72]}
+{"kind":"shape","id":"sh/idonyd0z","slide":5,"bbox":[694,196,58,10]}
+{"kind":"shape","id":"sh/t47y1kre","slide":5,"bbox":[700,306,46,10]}
+{"kind":"shape","id":"sh/0je9cvix","slide":5,"bbox":[820,178,352,156]}
+{"kind":"shape","id":"sh/b6xkf6dc","slide":5,"bbox":[836,192,6,128]}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":5,"text":"Home listing","textPreview":"Home listing","textChars":12,"textLines":1,"bbox":[852,196,304,28]}
+{"kind":"textbox","id":"sh/tcj6tova","slide":5,"text":"Browse products\nsearch\nfilter by category","textPreview":"Browse products | search | filter by category","textChars":41,"textLines":3,"bbox":[852,234,304,72]}
+{"kind":"shape","id":"sh/0rqd4vmt","slide":5,"bbox":[1086,196,58,10]}
+{"kind":"shape","id":"sh/bi9s36hc","slide":5,"bbox":[1092,306,46,10]}
+{"kind":"shape","id":"sh/ixczed8v","slide":5,"bbox":[36,356,352,156]}
+{"kind":"shape","id":"sh/s36hcrmh","slide":5,"bbox":[52,370,6,128]}
+{"kind":"textbox","id":"sh/hoza1gvy","slide":5,"text":"Product details","textPreview":"Product details","textChars":15,"textLines":1,"bbox":[68,374,304,28]}
+{"kind":"textbox","id":"sh/a1gvy90j","slide":5,"text":"Price\nstock\nadd to cart","textPreview":"Price | stock | add to cart","textChars":23,"textLines":3,"bbox":[68,412,304,72]}
+{"kind":"shape","id":"sh/zidonyd0","slide":5,"bbox":[302,374,58,10]}
+{"kind":"shape","id":"sh/svu9knih","slide":5,"bbox":[308,484,46,10]}
+{"kind":"shape","id":"sh/hgn29gr2","slide":5,"bbox":[428,356,352,156]}
+{"kind":"shape","id":"sh/ap4r65wj","slide":5,"bbox":[444,370,6,128]}
+{"kind":"textbox","id":"sh/za1gvy90","slide":5,"text":"Cart","textPreview":"Cart","textChars":4,"textLines":1,"bbox":[460,374,304,28]}
+{"kind":"textbox","id":"sh/sji5snel","slide":5,"text":"Review items\nupdate quantities\nproceed to checkout","textPreview":"Review items | update quantities | proceed to checkout","textChars":50,"textLines":3,"bbox":[460,412,304,72]}
+{"kind":"shape","id":"sh/h4byhgn2","slide":5,"bbox":[694,374,58,10]}
+{"kind":"shape","id":"sh/d0z61032","slide":5,"bbox":[700,484,46,10]}
+{"kind":"shape","id":"sh/kf6dcbul","slide":5,"bbox":[820,356,352,156]}
+{"kind":"shape","id":"sh/vu9knih4","slide":5,"bbox":[836,370,6,128]}
+{"kind":"textbox","id":"sh/29gr2p8n","slide":5,"text":"Checkout","textPreview":"Checkout","textChars":8,"textLines":1,"bbox":[852,374,304,28]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":5,"text":"Choose payment\nconfirm order\ntrack status","textPreview":"Choose payment | confirm order | track status","textChars":41,"textLines":3,"bbox":[852,412,304,72]}
+{"kind":"shape","id":"sh/knih4byh","slide":5,"bbox":[1086,374,58,10]}
+{"kind":"shape","id":"sh/v6psfil0","slide":5,"bbox":[1092,484,46,10]}
+{"kind":"shape","id":"sh/2lszqtcj","slide":5,"bbox":[144,574,990,36]}
+{"kind":"textbox","id":"sh/dcbulwva","slide":5,"text":"User journey: splash → auth → browse → product details → cart → checkout → order history","textPreview":"User journey: splash → auth → browse → product details → cart → checkout → order history","textChars":88,"textLines":1,"bbox":[152,576,974,32]}
+{"kind":"notes","id":"nt/hgqv3a","slide":5,"text":""}
+{"kind":"slide","id":"sl/b95rhn","slide":6,"title":"FARMER DASHBOARD","textShapes":37}
+{"kind":"shape","id":"sh/mhk3q5o7","slide":6,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/t83itgfm","slide":6,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/4nap4r65","slide":6,"text":"FARMER DASHBOARD","textPreview":"FARMER DASHBOARD","textChars":16,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/bq1oryts","slide":6,"text":"Farmers can publish, edit, and fulfill orders.","textPreview":"Farmers can publish, edit, and fulfill orders.","textChars":46,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/m58z25kb","slide":6,"text":"The dashboard covers listing management and order history in one place.","textPreview":"The dashboard covers listing management and order history in one place.","textChars":71,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/twra5gbq","slide":6,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/4byhgn29","slide":6,"text":"06 / 10","textPreview":"06 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/bm58z25k","slide":6,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/m1cfa9w3","slide":6,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/cfa9w3m9","slide":6,"text":"06 / 10","textPreview":"06 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/1032lszq","slide":6,"bbox":[36,178,568,420]}
+{"kind":"shape","id":"sh/u9knih4b","slide":6,"bbox":[52,192,6,392]}
+{"kind":"textbox","id":"sh/judg7ads","slide":6,"text":"Farmer workspace","textPreview":"Farmer workspace","textChars":16,"textLines":1,"bbox":[68,196,520,28]}
+{"kind":"textbox","id":"sh/c7u54zid","slide":6,"text":"Manage products, stock, and profile settings without leaving the dashboard.","textPreview":"Manage products, stock, and profile settings without leaving the dashboard.","textChars":75,"textLines":1,"bbox":[68,242,520,40]}
+{"kind":"shape","id":"sh/1orytsvu","slide":6,"bbox":[70,308,150,110]}
+{"kind":"shape","id":"sh/u18jqh0f","slide":6,"bbox":[86,322,6,82]}
+{"kind":"textbox","id":"sh/jm1cfa9w","slide":6,"text":"Open listings","textPreview":"Open listings","textChars":13,"textLines":1,"bbox":[102,326,102,28]}
+{"kind":"textbox","id":"sh/cvixczed","slide":6,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[102,348,102,48]}
+{"kind":"shape","id":"sh/5gbq1ory","slide":6,"bbox":[232,308,150,110]}
+{"kind":"shape","id":"sh/90je9cvi","slide":6,"bbox":[248,322,6,82]}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":6,"text":"Low stock","textPreview":"Low stock","textChars":9,"textLines":1,"bbox":[264,326,102,28]}
+{"kind":"textbox","id":"sh/rytsvu9k","slide":6,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[264,348,102,48]}
+{"kind":"shape","id":"sh/yd0z6103","slide":6,"bbox":[394,308,176,110]}
+{"kind":"shape","id":"sh/9s36hcrm","slide":6,"bbox":[410,322,6,82]}
+{"kind":"textbox","id":"sh/g7adsji5","slide":6,"text":"Pending orders","textPreview":"Pending orders","textChars":14,"textLines":1,"bbox":[426,326,128,28]}
+{"kind":"textbox","id":"sh/rmhk3q5o","slide":6,"text":"8","textPreview":"8","textChars":1,"textLines":1,"bbox":[426,348,128,48]}
+{"kind":"shape","id":"sh/y1kre1w7","slide":6,"bbox":[70,520,196,30]}
+{"kind":"textbox","id":"sh/5o7qpg3e","slide":6,"text":"Store settings","textPreview":"Store settings","textChars":14,"textLines":1,"bbox":[78,522,180,26]}
+{"kind":"shape","id":"sh/g3ex0nux","slide":6,"bbox":[278,520,124,30]}
+{"kind":"textbox","id":"sh/adsji5sn","slide":6,"text":"Order history","textPreview":"Order history","textChars":13,"textLines":1,"bbox":[286,522,108,26]}
+{"kind":"shape","id":"sh/3ylc7u54","slide":6,"bbox":[414,520,146,30]}
+{"kind":"textbox","id":"sh/sji5snel","slide":6,"text":"Profile settings","textPreview":"Profile settings","textChars":16,"textLines":1,"bbox":[422,522,130,26]}
+{"kind":"shape","id":"sh/h4byhgn2","slide":6,"bbox":[640,178,604,420]}
+{"kind":"shape","id":"sh/a5gbq1or","slide":6,"bbox":[656,192,6,392]}
+{"kind":"textbox","id":"sh/3m94fu18","slide":6,"text":"Order flow","textPreview":"Order flow","textChars":10,"textLines":1,"bbox":[672,196,556,28]}
+{"kind":"shape","id":"sh/s72x4nap","slide":6,"bbox":[676,220,36,36]}
+{"kind":"textbox","id":"sh/lszqtcj6","slide":6,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[676,224,36,26]}
+{"kind":"textbox","id":"sh/a1gvy90j","slide":6,"text":"Add product","textPreview":"Add product","textChars":11,"textLines":1,"bbox":[724,222,450,22]}
+{"kind":"textbox","id":"sh/zidonyd0","slide":6,"text":"Publish the listing with images, price, and stock.","textPreview":"Publish the listing with images, price, and stock.","textChars":50,"textLines":1,"bbox":[724,244,430,24]}
+{"kind":"textbox","id":"sh/ji5snelo","slide":6,"text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[682,256,28,20]}
+{"kind":"shape","id":"sh/uxc3ylc7","slide":6,"bbox":[676,286,36,36]}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":6,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[676,290,36,26]}
+{"kind":"textbox","id":"sh/c3ylc7u5","slide":6,"text":"Edit stock and price","textPreview":"Edit stock and price","textChars":20,"textLines":1,"bbox":[724,288,450,22]}
+{"kind":"textbox","id":"sh/j6tovaho","slide":6,"text":"Keep the storefront accurate as inventory changes.","textPreview":"Keep the storefront accurate as inventory changes.","textChars":50,"textLines":1,"bbox":[724,310,430,24]}
+{"kind":"textbox","id":"sh/ulwval87","slide":6,"text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[682,322,28,20]}
+{"kind":"shape","id":"sh/1cfa9w3m","slide":6,"bbox":[676,352,36,36]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":6,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[676,356,36,26]}
+{"kind":"textbox","id":"sh/j2t83itg","slide":6,"text":"Confirm order","textPreview":"Confirm order","textChars":13,"textLines":1,"bbox":[724,354,450,22]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":6,"text":"Accept the buyer order once payment or verification is complete.","textPreview":"Accept the buyer order once payment or verification is complete.","textChars":64,"textLines":1,"bbox":[724,376,430,24]}
+{"kind":"textbox","id":"sh/4byhgn29","slide":6,"text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[682,388,28,20]}
+{"kind":"shape","id":"sh/twra5gbq","slide":6,"bbox":[676,418,36,36]}
+{"kind":"textbox","id":"sh/m58z25kb","slide":6,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[676,422,36,26]}
+{"kind":"textbox","id":"sh/bq1oryts","slide":6,"text":"Mark delivered","textPreview":"Mark delivered","textChars":14,"textLines":1,"bbox":[724,420,450,22]}
+{"kind":"textbox","id":"sh/4nap4r65","slide":6,"text":"Close the order after delivery and update history.","textPreview":"Close the order after delivery and update history.","textChars":50,"textLines":1,"bbox":[724,442,430,24]}
+{"kind":"textbox","id":"sh/t83itgfm","slide":6,"text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[682,454,28,20]}
+{"kind":"shape","id":"sh/mhk3q5o7","slide":6,"bbox":[676,484,36,36]}
+{"kind":"textbox","id":"sh/b2hwfyxo","slide":6,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[676,488,36,26]}
+{"kind":"textbox","id":"sh/4vmtwra5","slide":6,"text":"Review history","textPreview":"Review history","textChars":14,"textLines":1,"bbox":[724,486,450,22]}
+{"kind":"textbox","id":"sh/tgfmlkjm","slide":6,"text":"Track completed orders and pending work.","textPreview":"Track completed orders and pending work.","textChars":40,"textLines":1,"bbox":[724,508,430,24]}
+{"kind":"notes","id":"nt/b95rhn","slide":6,"text":""}
+{"kind":"slide","id":"sl/grioh8","slide":7,"title":"PAYMENT FLOW","textShapes":21}
+{"kind":"shape","id":"sh/9gr2p8nq","slide":7,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/2p8nqxs7","slide":7,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":7,"text":"PAYMENT FLOW","textPreview":"PAYMENT FLOW","textChars":12,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":7,"text":"Checkout is built to feel real.","textPreview":"Checkout is built to feel real.","textChars":31,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":7,"text":"Stripe powers secure card checkout while mobile-money and cash paths keep the assignment complete.","textPreview":"Stripe powers secure card checkout while mobile-money and cash paths keep the assignment complete.","textChars":98,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/2hwfyxob","slide":7,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":7,"text":"07 / 10","textPreview":"07 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":7,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/9w3m94fu","slide":7,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/xczed8v6","slide":7,"text":"07 / 10","textPreview":"07 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/8v6psfil","slide":7,"bbox":[36,178,500,424]}
+{"kind":"shape","id":"sh/fa9w3m94","slide":7,"bbox":[52,192,6,396]}
+{"kind":"textbox","id":"sh/qpg3ex0n","slide":7,"text":"Cart summary","textPreview":"Cart summary","textChars":12,"textLines":1,"bbox":[68,196,452,28]}
+{"kind":"textbox","id":"sh/x4nap4r6","slide":7,"text":"2 items in cart\n\nTomatoes × 3\nRice basket × 1\n\nSubtotal                Le 265\nDelivery                 Le 20\nTotal                    Le 285","textPreview":"2 items in cart |  | Tomatoes × 3 | Rice basket × 1 |  | Subtotal                Le 265 | Delivery                 Le 20 | Total         ...","textChars":140,"textLines":8,"bbox":[68,248,452,280]}
+{"kind":"shape","id":"sh/8jqh0fep","slide":7,"bbox":[280,554,214,32]}
+{"kind":"textbox","id":"sh/fyxobm58","slide":7,"text":"Proceed to checkout","textPreview":"Proceed to checkout","textChars":19,"textLines":1,"bbox":[288,556,198,28]}
+{"kind":"shape","id":"sh/qd4vmtwr","slide":7,"bbox":[560,178,684,424]}
+{"kind":"shape","id":"sh/xs72x4na","slide":7,"bbox":[576,192,6,396]}
+{"kind":"textbox","id":"sh/87ed8bat","slide":7,"text":"Supported payment methods","textPreview":"Supported payment methods","textChars":25,"textLines":1,"bbox":[592,196,636,28]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":7,"bbox":[596,240,292,74]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":7,"bbox":[612,254,6,46]}
+{"kind":"textbox","id":"sh/m94fu18j","slide":7,"text":"Stripe secure checkout","textPreview":"Stripe secure checkout","textChars":22,"textLines":1,"bbox":[628,258,244,28]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":7,"text":"Hosted card payment session with webhook confirmation.","textPreview":"Hosted card payment session with webhook confirmation.","textChars":54,"textLines":1,"bbox":[628,278,244,26]}
+{"kind":"shape","id":"sh/83itgfml","slide":7,"bbox":[924,240,284,74]}
+{"kind":"shape","id":"sh/xobm58z2","slide":7,"bbox":[940,254,6,46]}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":7,"text":"Orange Money simulation","textPreview":"Orange Money simulation","textChars":23,"textLines":1,"bbox":[956,258,236,28]}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":7,"text":"Simulated mobile-money path for the assignment brief.","textPreview":"Simulated mobile-money path for the assignment brief.","textChars":53,"textLines":1,"bbox":[956,278,236,26]}
+{"kind":"shape","id":"sh/4zidonyd","slide":7,"bbox":[596,334,292,74]}
+{"kind":"shape","id":"sh/xkf6dcbu","slide":7,"bbox":[612,348,6,46]}
+{"kind":"textbox","id":"sh/jm1cfa9w","slide":7,"text":"Africell Money simulation","textPreview":"Africell Money simulation","textChars":25,"textLines":1,"bbox":[628,352,244,28]}
+{"kind":"textbox","id":"sh/u18jqh0f","slide":7,"text":"Second simulated mobile-money option for demonstration.","textPreview":"Second simulated mobile-money option for demonstration.","textChars":55,"textLines":1,"bbox":[628,372,244,26]}
+{"kind":"shape","id":"sh/1orytsvu","slide":7,"bbox":[924,334,284,74]}
+{"kind":"shape","id":"sh/c7u54zid","slide":7,"bbox":[940,348,6,46]}
+{"kind":"textbox","id":"sh/judg7ads","slide":7,"text":"Bank transfer","textPreview":"Bank transfer","textChars":13,"textLines":1,"bbox":[956,352,236,28]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":7,"text":"Manual payment path that still completes the order flow.","textPreview":"Manual payment path that still completes the order flow.","textChars":56,"textLines":1,"bbox":[956,372,236,26]}
+{"kind":"shape","id":"sh/1032lszq","slide":7,"bbox":[760,428,284,74]}
+{"kind":"shape","id":"sh/cfa9w3m9","slide":7,"bbox":[776,442,6,46]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":7,"text":"Cash on delivery","textPreview":"Cash on delivery","textChars":16,"textLines":1,"bbox":[792,446,236,28]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":7,"text":"Functional manual option for offline buyers.","textPreview":"Functional manual option for offline buyers.","textChars":44,"textLines":1,"bbox":[792,466,236,26]}
+{"kind":"shape","id":"sh/ulwval87","slide":7,"bbox":[604,548,612,32]}
+{"kind":"textbox","id":"sh/j6tovaho","slide":7,"text":"Flow: add to cart → review order → choose payment → webhook / return URL refreshes status","textPreview":"Flow: add to cart → review order → choose payment → webhook / return URL refreshes status","textChars":89,"textLines":1,"bbox":[612,550,596,28]}
+{"kind":"notes","id":"nt/grioh8","slide":7,"text":""}
+{"kind":"slide","id":"sl/aydr3y","slide":8,"title":"ADMIN","textShapes":20}
+{"kind":"shape","id":"sh/a1gvy90j","slide":8,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/hoza1gvy","slide":8,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":8,"text":"ADMIN","textPreview":"ADMIN","textChars":5,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/za1gvy90","slide":8,"text":"Moderation tools keep the marketplace trustworthy.","textPreview":"Moderation tools keep the marketplace trustworthy.","textChars":50,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":8,"text":"The optional admin panel handles verification, user management, and transaction oversight.","textPreview":"The optional admin panel handles verification, user management, and transaction oversight.","textChars":90,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/hgn29gr2","slide":8,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/svu9knih","slide":8,"text":"08 / 10","textPreview":"08 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/3ylc7u54","slide":8,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/adsji5sn","slide":8,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":8,"text":"08 / 10","textPreview":"08 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/psfil0rq","slide":8,"bbox":[36,180,392,104]}
+{"kind":"shape","id":"sh/e1w7mp0b","slide":8,"bbox":[52,194,6,76]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":8,"text":"Verify farmers","textPreview":"Verify farmers","textChars":14,"textLines":1,"bbox":[68,198,344,28]}
+{"kind":"textbox","id":"sh/wval87ed","slide":8,"text":"Approve sellers and mark trusted accounts.","textPreview":"Approve sellers and mark trusted accounts.","textChars":42,"textLines":1,"bbox":[68,234,344,34]}
+{"kind":"shape","id":"sh/pg3ex0nu","slide":8,"bbox":[444,180,392,104]}
+{"kind":"shape","id":"sh/epkzupwb","slide":8,"bbox":[460,194,6,76]}
+{"kind":"textbox","id":"sh/7adsji5s","slide":8,"text":"Manage users","textPreview":"Manage users","textChars":12,"textLines":1,"bbox":[476,198,344,28]}
+{"kind":"textbox","id":"sh/wra5gbq1","slide":8,"text":"Suspend, restore, and monitor buyers and farmers.","textPreview":"Suspend, restore, and monitor buyers and farmers.","textChars":49,"textLines":1,"bbox":[476,234,344,34]}
+{"kind":"shape","id":"sh/lc7u54zi","slide":8,"bbox":[852,180,392,104]}
+{"kind":"shape","id":"sh/p4r65wju","slide":8,"bbox":[868,194,6,76]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":8,"text":"Monitor transactions","textPreview":"Monitor transactions","textChars":20,"textLines":1,"bbox":[884,198,344,28]}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":8,"text":"Watch order volume, checkout events, and payment status.","textPreview":"Watch order volume, checkout events, and payment status.","textChars":56,"textLines":1,"bbox":[884,234,344,34]}
+{"kind":"shape","id":"sh/ed8v6psf","slide":8,"bbox":[36,316,290,236]}
+{"kind":"shape","id":"sh/pwb2hwfy","slide":8,"bbox":[52,330,6,208]}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":8,"text":"Review listings","textPreview":"Review listings","textChars":15,"textLines":1,"bbox":[68,334,242,28]}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":8,"text":"Spot duplicates, poor content, or suspicious products.","textPreview":"Spot duplicates, poor content, or suspicious products.","textChars":54,"textLines":1,"bbox":[68,374,242,128]}
+{"kind":"shape","id":"sh/i5sneloj","slide":8,"bbox":[350,316,290,236]}
+{"kind":"shape","id":"sh/pkzupwb2","slide":8,"bbox":[366,330,6,208]}
+{"kind":"textbox","id":"sh/0z61032l","slide":8,"text":"Audit trail","textPreview":"Audit trail","textChars":11,"textLines":1,"bbox":[382,334,242,28]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":8,"text":"Keep timestamps and action history for moderation.","textPreview":"Keep timestamps and action history for moderation.","textChars":50,"textLines":1,"bbox":[382,374,242,128]}
+{"kind":"shape","id":"sh/j2t83itg","slide":8,"bbox":[664,316,290,236]}
+{"kind":"shape","id":"sh/8nqxs72x","slide":8,"bbox":[680,330,6,208]}
+{"kind":"textbox","id":"sh/18jqh0fe","slide":8,"text":"Reports","textPreview":"Reports","textChars":7,"textLines":1,"bbox":[696,334,242,28]}
+{"kind":"textbox","id":"sh/q5o7qpg3","slide":8,"text":"Summaries for orders, payments, and system health.","textPreview":"Summaries for orders, payments, and system health.","textChars":50,"textLines":1,"bbox":[696,374,242,128]}
+{"kind":"shape","id":"sh/jqh0fepk","slide":8,"bbox":[978,316,266,236]}
+{"kind":"shape","id":"sh/8bat47y1","slide":8,"bbox":[994,330,6,208]}
+{"kind":"textbox","id":"sh/1w7mp0bi","slide":8,"text":"Farmer verification","textPreview":"Farmer verification","textChars":19,"textLines":1,"bbox":[1010,334,218,28]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":8,"text":"Control trust in the seller onboarding flow.","textPreview":"Control trust in the seller onboarding flow.","textChars":44,"textLines":1,"bbox":[1010,374,218,128]}
+{"kind":"notes","id":"nt/aydr3y","slide":8,"text":""}
+{"kind":"slide","id":"sl/kac5ij","slide":9,"title":"DEPLOYMENT","textShapes":16}
+{"kind":"shape","id":"sh/j6tovaho","slide":9,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/crmhk3q5","slide":9,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":9,"text":"DEPLOYMENT","textPreview":"DEPLOYMENT","textChars":10,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":9,"text":"Netlify, Render, and Neon give us a free launch path.","textPreview":"Netlify, Render, and Neon give us a free launch path.","textChars":53,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/ji5snelo","slide":9,"text":"The public frontend, API, and database can be deployed independently without changing the app design.","textPreview":"The public frontend, API, and database can be deployed independently without changing the app design.","textChars":101,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/c3ylc7u5","slide":9,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":9,"text":"09 / 10","textPreview":"09 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/q5o7qpg3","slide":9,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/jqh0fepk","slide":9,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/fmlkjm1c","slide":9,"text":"09 / 10","textPreview":"09 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/q1orytsv","slide":9,"bbox":[36,178,362,386]}
+{"kind":"shape","id":"sh/xs72x4na","slide":9,"bbox":[52,192,6,358]}
+{"kind":"textbox","id":"sh/87ed8bat","slide":9,"text":"Netlify frontend","textPreview":"Netlify frontend","textChars":16,"textLines":1,"bbox":[68,196,314,28]}
+{"kind":"textbox","id":"sh/je9cvixc","slide":9,"text":"• Expo web export\n• Responsive UI hosting\n• Public user entry point\n• Payment return handling","textPreview":"• Expo web export | • Responsive UI hosting | • Public user entry point | • Payment return handling","textChars":93,"textLines":4,"bbox":[68,248,314,210]}
+{"kind":"shape","id":"sh/qtcj6tov","slide":9,"bbox":[410,334,36,36]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":9,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[418,336,20,32]}
+{"kind":"shape","id":"sh/8z25kb6x","slide":9,"bbox":[454,178,362,386]}
+{"kind":"shape","id":"sh/fa9w3m94","slide":9,"bbox":[470,192,6,358]}
+{"kind":"textbox","id":"sh/qpg3ex0n","slide":9,"text":"Render API","textPreview":"Render API","textChars":10,"textLines":1,"bbox":[486,196,314,28]}
+{"kind":"textbox","id":"sh/ytsvu9kn","slide":9,"text":"• `npm run api`\n• Express server and auth\n• Stripe webhooks\n• PostgreSQL connection","textPreview":"• `npm run api` | • Express server and auth | • Stripe webhooks | • PostgreSQL connection","textChars":83,"textLines":4,"bbox":[486,248,314,210]}
+{"kind":"shape","id":"sh/neloj2t8","slide":9,"bbox":[828,334,36,36]}
+{"kind":"textbox","id":"sh/czed8v6p","slide":9,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[836,336,20,32]}
+{"kind":"shape","id":"sh/5kb6xkf6","slide":9,"bbox":[872,178,372,386]}
+{"kind":"shape","id":"sh/u54zidon","slide":9,"bbox":[888,192,6,358]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":9,"text":"Neon PostgreSQL","textPreview":"Neon PostgreSQL","textChars":15,"textLines":1,"bbox":[904,196,324,28]}
+{"kind":"textbox","id":"sh/cbulwval","slide":9,"text":"• `DATABASE_URL` in production\n• Persistent marketplace state\n• pgAdmin4-compatible schema\n• Free tier friendly","textPreview":"• `DATABASE_URL` in production | • Persistent marketplace state | • pgAdmin4-compatible schema | • Free tier friendly","textChars":111,"textLines":4,"bbox":[904,248,324,210]}
+{"kind":"shape","id":"sh/5sneloj2","slide":9,"bbox":[36,592,1208,72]}
+{"kind":"shape","id":"sh/y90je9cv","slide":9,"bbox":[52,606,6,44]}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":9,"text":"Key environment values","textPreview":"Key environment values","textChars":22,"textLines":1,"bbox":[68,610,1160,28]}
+{"kind":"textbox","id":"sh/d0z61032","slide":9,"text":"EXPO_PUBLIC_API_URL • CLIENT_ORIGIN • DATABASE_URL • STRIPE_SECRET_KEY • STRIPE_WEBHOOK_SECRET • PAYMENT_RETURN_URL","textPreview":"EXPO_PUBLIC_API_URL • CLIENT_ORIGIN • DATABASE_URL • STRIPE_SECRET_KEY • STRIPE_WEBHOOK_SECRET • PAYMENT_RETURN_URL","textChars":115,"textLines":1,"bbox":[68,620,1160,24]}
+{"kind":"notes","id":"nt/kac5ij","slide":9,"text":""}
+{"kind":"slide","id":"sl/3y24cj","slide":10,"title":"DEMO / CONCLUSION","textShapes":14}
+{"kind":"shape","id":"sh/7u54zido","slide":10,"bbox":[24,24,1232,122]}
+{"kind":"shape","id":"sh/wfyxobm5","slide":10,"bbox":[48,44,148,28]}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":10,"text":"DEMO / CONCLUSION","textPreview":"DEMO / CONCLUSION","textChars":17,"textLines":1,"bbox":[56,46,132,24]}
+{"kind":"textbox","id":"sh/eloj2t83","slide":10,"text":"The submission is ready to demonstrate.","textPreview":"The submission is ready to demonstrate.","textChars":39,"textLines":1,"bbox":[48,76,1000,36]}
+{"kind":"textbox","id":"sh/36hcrmhk","slide":10,"text":"The deck, code, docs, and deployed services cover the brief from end to end.","textPreview":"The deck, code, docs, and deployed services cover the brief from end to end.","textChars":76,"textLines":1,"bbox":[48,112,980,22]}
+{"kind":"shape","id":"sh/wra5gbq1","slide":10,"bbox":[1108,44,112,28]}
+{"kind":"textbox","id":"sh/lc7u54zi","slide":10,"text":"10 / 10","textPreview":"10 / 10","textChars":7,"textLines":1,"bbox":[1116,46,96,24]}
+{"kind":"textbox","id":"sh/epkzupwb","slide":10,"text":"Farmer Marketplace • Presentation deck","textPreview":"Farmer Marketplace • Presentation deck","textChars":38,"textLines":1,"bbox":[56,670,720,18]}
+{"kind":"shape","id":"sh/7adsji5s","slide":10,"bbox":[1116,662,92,26]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":10,"text":"10 / 10","textPreview":"10 / 10","textChars":7,"textLines":1,"bbox":[1124,664,76,22]}
+{"kind":"shape","id":"sh/u54zidon","slide":10,"bbox":[36,180,548,408]}
+{"kind":"shape","id":"sh/5sneloj2","slide":10,"bbox":[52,194,6,380]}
+{"kind":"textbox","id":"sh/cbulwval","slide":10,"text":"What is ready","textPreview":"What is ready","textChars":13,"textLines":1,"bbox":[68,198,500,28]}
+{"kind":"textbox","id":"sh/neloj2t8","slide":10,"text":"• Working application\n• Source code on GitHub\n• Updated architecture and API docs\n• Stripe and payment flow\n• Render / Netlify deployment\n• Presentation deck","textPreview":"• Working application | • Source code on GitHub | • Updated architecture and API docs | • Stripe and payment flow | • Render / Netlify de...","textChars":157,"textLines":6,"bbox":[68,252,500,250]}
+{"kind":"shape","id":"sh/ytsvu9kn","slide":10,"bbox":[612,180,592,408]}
+{"kind":"shape","id":"sh/5kb6xkf6","slide":10,"bbox":[628,194,6,380]}
+{"kind":"textbox","id":"sh/czed8v6p","slide":10,"text":"Live demo links","textPreview":"Live demo links","textChars":15,"textLines":1,"bbox":[644,198,544,28]}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":10,"text":"Frontend: https://sl-market-place.netlify.app/\nAPI: https://farmer-marketplace-fs2a.onrender.com\n\nBuilt to be mobile-first, responsive, and production-oriented.","textPreview":"Frontend: https://sl-market-place.netlify.app/ | API: https://farmer-marketplace-fs2a.onrender.com |  | Built to be mobile-first, respons...","textChars":160,"textLines":4,"bbox":[644,252,544,220]}
+{"kind":"shape","id":"sh/yhgn29gr","slide":10,"bbox":[700,494,170,30]}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":10,"text":"Mobile-first UI","textPreview":"Mobile-first UI","textChars":15,"textLines":1,"bbox":[708,496,154,26]}
+{"kind":"shape","id":"sh/z25kb6xk","slide":10,"bbox":[888,494,176,30]}
+{"kind":"textbox","id":"sh/onyd0z61","slide":10,"text":"Secure payments","textPreview":"Secure payments","textChars":15,"textLines":1,"bbox":[896,496,160,26]}
+{"kind":"shape","id":"sh/d8v6psfi","slide":10,"bbox":[1080,494,100,30]}
+{"kind":"textbox","id":"sh/6tovahoz","slide":10,"text":"Ready","textPreview":"Ready","textChars":5,"textLines":1,"bbox":[1088,496,84,26]}
+{"kind":"shape","id":"sh/vahoza1g","slide":10,"bbox":[1018,352,112,112]}
+{"kind":"textbox","id":"sh/ovahoza1","slide":10,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[1018,384,112,36]}
+{"kind":"notes","id":"nt/3y24cj","slide":10,"text":""}

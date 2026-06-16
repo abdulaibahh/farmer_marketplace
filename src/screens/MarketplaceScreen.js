@@ -265,6 +265,9 @@ export function MarketplaceScreen() {
   );
 
   const heroSlides = useMemo(() => {
+    const openFeatured = featuredProducts[0] || visibleProducts[0] || null;
+    const topPick = featuredProducts[1] || openFeatured;
+
     return [
       {
         id: 'fresh-harvest',
