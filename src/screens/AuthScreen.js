@@ -104,12 +104,9 @@ export function AuthScreen() {
       tone: 'primary',
       colors: [colors.primaryDark, colors.primary],
       onPress: () => {
-        selectAuthFlow(
-          'register',
-          'buyer',
-          'Buyer registration selected. The form below is ready for a buyer account.',
-          'buyer'
-        );
+        setSelectionMessage('Buyer journey details opened. Review the full path, then continue to the form.');
+        setJourneyKey('buyer');
+        notify('info', 'Opened buyer journey details.');
       }
     },
     {
@@ -121,12 +118,9 @@ export function AuthScreen() {
       tone: 'success',
       colors: [colors.heroStart, colors.heroEnd],
       onPress: () => {
-        selectAuthFlow(
-          'register',
-          'farmer',
-          'Farmer registration selected. The form below is ready for a seller account.',
-          'farmer'
-        );
+        setSelectionMessage('Farmer journey details opened. Review the full path, then continue to the form.');
+        setJourneyKey('farmer');
+        notify('info', 'Opened farmer journey details.');
       }
     },
     {
@@ -137,7 +131,11 @@ export function AuthScreen() {
       cta: 'Sign in now',
       tone: 'accent',
       colors: [colors.accent, '#A86710'],
-      onPress: () => selectAuthFlow('login', null, 'Sign in selected. Use your existing account details below.', 'login')
+      onPress: () => {
+        setSelectionMessage('Sign-in journey details opened. Review the full path, then continue to the form.');
+        setJourneyKey('login');
+        notify('info', 'Opened sign-in journey details.');
+      }
     }
   ];
 
@@ -194,7 +192,9 @@ export function AuthScreen() {
             icon="🛍️"
             tone="primary"
             onPress={() => {
-              selectAuthFlow('register', 'buyer', 'Buyer flow selected. You can register as a buyer below.', 'buyer');
+              setSelectionMessage('Buyer journey details opened. Review the full path, then continue to the form.');
+              setJourneyKey('buyer');
+              notify('info', 'Opened buyer journey details.');
             }}
           />
           <StatCard
@@ -204,7 +204,9 @@ export function AuthScreen() {
             icon="🌾"
             tone="accent"
             onPress={() => {
-              selectAuthFlow('register', 'farmer', 'Farmer flow selected. You can create a seller account below.', 'farmer');
+              setSelectionMessage('Farmer journey details opened. Review the full path, then continue to the form.');
+              setJourneyKey('farmer');
+              notify('info', 'Opened farmer journey details.');
             }}
           />
           <StatCard
@@ -213,7 +215,11 @@ export function AuthScreen() {
             hint="Tap to sign in"
             icon="💳"
             tone="info"
-            onPress={() => selectAuthFlow('login', null, 'Sign-in mode selected. Enter your email and password below.', 'login')}
+            onPress={() => {
+              setSelectionMessage('Sign-in journey details opened. Review the full path, then continue to the form.');
+              setJourneyKey('login');
+              notify('info', 'Opened sign-in journey details.');
+            }}
           />
         </View>
 
