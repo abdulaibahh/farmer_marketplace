@@ -96,8 +96,9 @@ If you test on a physical device, point `EXPO_PUBLIC_API_URL` at your computer's
 
 ## Stripe payments
 
-- When `STRIPE_SECRET_KEY` is configured, checkout opens a hosted Stripe payment session.
-- If Stripe keys are missing, secure card checkout returns a clear configuration error.
+- `Secure Card Checkout` opens a hosted Stripe payment session when `STRIPE_SECRET_KEY` is configured.
+- `Orange Money` and `Africell Money` are represented as simulated mobile money payment methods for the assignment flow.
+- `Bank Transfer` and `Cash on Delivery` remain functional manual payment options in the order lifecycle.
 - Webhooks are handled at `POST /webhooks/stripe`.
 - For local testing, run `stripe listen --forward-to http://localhost:4000/webhooks/stripe` and copy the printed `whsec_...` value into `backend/.env`.
 - For Dashboard webhooks, add the same endpoint URL and reveal the signing secret from Stripe.

@@ -71,6 +71,7 @@ export function MarketplaceScreen() {
   const [cartNote, setCartNote] = useState('');
   const [insightKey, setInsightKey] = useState(null);
   const [heroSlideKey, setHeroSlideKey] = useState(null);
+  const [paymentGuideOpen, setPaymentGuideOpen] = useState(false);
 
   const visibleProducts = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -244,6 +245,24 @@ export function MarketplaceScreen() {
     sortBy,
     visibleProducts
   ]);
+
+  const paymentGuide = useMemo(
+    () => ({
+      eyebrow: 'Payment integration',
+      title: 'How payments work in this marketplace',
+      subtitle: 'Stripe powers card checkout, while the mobile money and bank transfer paths act as simulated/manual payment methods for the assignment.',
+      badgeLabel: 'Payments',
+      badgeTone: 'accent',
+      rows: [
+        ['Secure Card Checkout', 'Stripe hosted checkout', 'Real card payment flow in test or live mode.'],
+        ['Orange Money', 'Simulated mobile money', 'Creates an order and tracks it through the normal workflow.'],
+        ['Africell Money', 'Simulated mobile money', 'Works like Orange Money for the project brief.'],
+        ['Bank Transfer', 'Manual confirmation flow', 'Buyer can place the order and the seller/admin can confirm it.'],
+        ['Cash on Delivery', 'Functional delivery payment', 'Automatically becomes paid when the order is delivered.']
+      ]
+    }),
+    []
+  );
 
   const heroSlides = useMemo(() => {
     return [
@@ -565,6 +584,26 @@ export function MarketplaceScreen() {
         ) : null}
       </DetailModal>
 
+      <DetailModal
+        visible={paymentGuideOpen}
+        eyebrow={paymentGuide.eyebrow}
+        title={paymentGuide.title}
+        subtitle={paymentGuide.subtitle}
+        badgeLabel={paymentGuide.badgeLabel}
+        badgeTone={paymentGuide.badgeTone}
+        onClose={() => setPaymentGuideOpen(false)}
+      >
+        <View style={styles.insightStack}>
+          {paymentGuide.rows.map(([label, value, note]) => (
+            <Card key={label} style={styles.insightRowCard}>
+              <Text style={styles.insightRowLabel}>{label}</Text>
+              <Text style={styles.insightRowValue}>{value}</Text>
+              {note ? <Text style={styles.insightRowNote}>{note}</Text> : null}
+            </Card>
+          ))}
+        </View>
+      </DetailModal>
+
       <View style={styles.statsRow}>
         <StatCard
           label="Visible listings"
@@ -608,17 +647,25 @@ export function MarketplaceScreen() {
             title={`Your cart (${cartItemCount} item${cartItemCount === 1 ? '' : 's'})`}
             subtitle="Add products here first, then pay once you’re ready."
             action={
-              cartLineItems.length > 0 ? (
+              <View style={styles.cartActionRow}>
                 <Button
-                  label="Clear cart"
+                  label="Payment guide"
                   variant="ghost"
                   size="sm"
-                  onPress={() => {
-                    clearCart();
-                    setCartNote('');
-                  }}
+                  onPress={() => setPaymentGuideOpen(true)}
                 />
-              ) : null
+                {cartLineItems.length > 0 ? (
+                  <Button
+                    label="Clear cart"
+                    variant="ghost"
+                    size="sm"
+                    onPress={() => {
+                      clearCart();
+                      setCartNote('');
+                    }}
+                  />
+                ) : null}
+              </View>
             }
           />
 
@@ -1143,6 +1190,12 @@ const styles = StyleSheet.create({
   },
   cartPanel: {
     gap: spacing.lg
+  },
+  cartActionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+    alignItems: 'center'
   },
   cartList: {
     gap: spacing.md
