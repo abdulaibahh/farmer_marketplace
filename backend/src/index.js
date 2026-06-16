@@ -1206,6 +1206,31 @@ app.patch(
   )
 );
 
+app.patch(
+  '/users/:id/verification',
+  ...combineAuth(
+    requireRole('admin'),
+    asyncHandler(async (req, res) => {
+      const userId = Number(req.params.id);
+      if (userId === req.currentUser.id) {
+        throw createError(400, 'You cannot verify your own account.');
+      }
+
+      const existing = await pool.query('SELECT role, is_verified FROM users WHERE id = $1', [userId]);
+      if (!existing.rows[0]) {
+        throw createError(404, 'That user no longer exists.');
+      }
+
+      if (existing.rows[0].role !== 'farmer') {
+        throw createError(400, 'Only farmer accounts can be verified.');
+      }
+
+      await pool.query('UPDATE users SET is_verified = NOT is_verified, updated_at = NOW() WHERE id = $1', [userId]);
+      res.json({ bootstrap: await loadBootstrap(req.currentUser.id) });
+    })
+  )
+);
+
 app.get(
   '/analytics',
   ...combineAuth(

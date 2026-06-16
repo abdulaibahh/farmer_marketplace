@@ -29,6 +29,9 @@ Official pricing pages:
 - `backend/` — Express API for PostgreSQL, auth, checkout, and marketplace logic
 - `database/schema.sql` — PostgreSQL schema for pgAdmin4
 - `database/initial-admin.sql` — bootstrap script for your first admin account
+- `docs/system-architecture.md` — architecture summary for the submission
+- `docs/api-reference.md` — endpoint reference for the backend
+- `docs/presentation-outline.md` — slide outline for the presentation deliverable
 - `assets/` — app icon, splash screen, adaptive icon, and web favicon
 - `eas.json` — Expo Application Services build profiles
 - `netlify.toml` — Netlify static web configuration
@@ -105,6 +108,12 @@ If you test on a physical device, point `EXPO_PUBLIC_API_URL` at your computer's
 - Buyers search, order, pay, and review sellers
 - Admin manages users, listings, and reports
 - Responsive layout for mobile and wider screens
+
+## Submission support
+
+- Use `docs/system-architecture.md` for the architecture slide or report section
+- Use `docs/api-reference.md` for the updated API documentation
+- Use `docs/presentation-outline.md` to build the required PowerPoint deck
 
 ## Notes
 

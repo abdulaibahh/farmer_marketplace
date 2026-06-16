@@ -16,6 +16,7 @@ export function AdminScreen() {
     removeProduct,
     restoreProduct,
     toggleUserStatus,
+    toggleUserVerification,
     notify
   } = useMarketplace();
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -515,11 +516,22 @@ export function AdminScreen() {
         onClose={() => setSelectedUserId(null)}
         actions={
           selectedUser && selectedUser.id !== currentUser.id ? (
-            <Button
-              label={selectedUser.isActive ? 'Suspend user' : 'Restore user'}
-              variant={selectedUser.isActive ? 'danger' : 'secondary'}
-              onPress={() => toggleUserStatus(selectedUser.id)}
-            />
+            <View style={styles.detailActionRow}>
+              {selectedUser.role === 'farmer' ? (
+                <Button
+                  label={selectedUser.isVerified ? 'Revoke verification' : 'Verify farmer'}
+                  variant={selectedUser.isVerified ? 'secondary' : 'accent'}
+                  onPress={() => toggleUserVerification(selectedUser.id)}
+                  style={styles.flex}
+                />
+              ) : null}
+              <Button
+                label={selectedUser.isActive ? 'Suspend user' : 'Restore user'}
+                variant={selectedUser.isActive ? 'danger' : 'secondary'}
+                onPress={() => toggleUserStatus(selectedUser.id)}
+                style={styles.flex}
+              />
+            </View>
           ) : null
         }
       >

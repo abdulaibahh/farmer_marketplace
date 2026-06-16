@@ -44,5 +44,6 @@ export const api = {
   confirmOrder: (token, id) => request(`/orders/${id}/confirm`, { method: 'POST', token }),
   deliverOrder: (token, id) => request(`/orders/${id}/deliver`, { method: 'POST', token }),
   addReview: (token, id, body) => request(`/orders/${id}/reviews`, { method: 'POST', token, body }),
-  toggleUserStatus: (token, id) => request(`/users/${id}/status`, { method: 'PATCH', token })
+  toggleUserStatus: (token, id) => request(`/users/${id}/status`, { method: 'PATCH', token }),
+  toggleUserVerification: (token, id) => request(`/users/${id}/verification`, { method: 'PATCH', token })
 };

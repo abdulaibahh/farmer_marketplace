@@ -709,6 +709,27 @@ export function MarketplaceProvider({ children }) {
     }
   };
 
+  const toggleUserVerification = async (userId) => {
+    if (!currentUser || currentUser.role !== 'admin' || !authTokenRef.current) {
+      return false;
+    }
+
+    const target = users.find((user) => user.id === userId);
+    if (target?.role !== 'farmer') {
+      notify('warning', 'Verification is reserved for farmer accounts.');
+      return false;
+    }
+
+    try {
+      const result = await api.toggleUserVerification(authTokenRef.current, userId);
+      applyResponse(result);
+      notify('success', 'Farmer verification updated.');
+      return true;
+    } catch (error) {
+      return handleRemoteError(error, 'Unable to update the farmer right now.');
+    }
+  };
+
   const value = useMemo(
     () => ({
       users,
@@ -740,7 +761,8 @@ export function MarketplaceProvider({ children }) {
       confirmOrder,
       deliverOrder,
       addReview,
-      toggleUserStatus
+      toggleUserStatus,
+      toggleUserVerification
     }),
     [
       addProduct,
@@ -769,6 +791,7 @@ export function MarketplaceProvider({ children }) {
       toast,
       toggleProductAvailability,
       toggleUserStatus,
+      toggleUserVerification,
       updateCartItemQuantity,
       updateProfile,
       updateProduct,
