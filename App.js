@@ -9,7 +9,7 @@ import { SellScreen } from './src/screens/SellScreen';
 import { OrdersScreen } from './src/screens/OrdersScreen';
 import { AdminScreen } from './src/screens/AdminScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
-import { Badge, Button, Chip, StatCard } from './src/components/ui';
+import { Badge, Button, Card, Chip, DetailModal, StatCard } from './src/components/ui';
 import { colors, gradients, radius, spacing, typeScale, weights } from './src/theme';
 import { formatLeones, roleLabel } from './src/utils/format';
 
@@ -55,17 +55,52 @@ function AppShell() {
   const { currentUser, toast, analytics, signOut, notify } = useMarketplace();
   const [activeTab, setActiveTab] = useState('market');
   const [navHistory, setNavHistory] = useState([]);
+  const [lockedTabId, setLockedTabId] = useState(null);
   const { width } = useWindowDimensions();
   const isWide = width >= 980;
 
-  const availableTabs = useMemo(
+  const accessibleTabs = useMemo(
     () => tabs.filter((tab) => tab.roles.includes(currentUser?.role)),
     [currentUser?.role]
   );
   const adminFallbackTab = currentUser?.role === 'admin' ? 'admin' : 'orders';
 
+  const lockedTabInfo = useMemo(() => {
+    if (!lockedTabId) {
+      return null;
+    }
+
+    const lockedTab = tabs.find((tab) => tab.id === lockedTabId);
+    if (!lockedTab) {
+      return null;
+    }
+
+    const requiredRoles = lockedTab.roles.map((role) => roleLabel(role)).join(' or ');
+    const currentRole = currentUser ? roleLabel(currentUser.role) : 'Guest';
+
+    return {
+      eyebrow: 'Restricted workspace',
+      title: `${lockedTab.label} is locked`,
+      subtitle: `This tab is visible for ${requiredRoles} accounts.`,
+      badgeLabel: 'Locked',
+      badgeTone: 'warning',
+      rows: [
+        ['Required access', requiredRoles, 'Sign in with a matching role to open this workspace.'],
+        ['Your current role', currentRole, currentUser ? 'This account does not match the workspace permissions.' : 'You are not signed in yet.'],
+        ['What it does', lockedTab.subtitle, 'The tab stays visible so you can see the full app structure.']
+      ],
+      actionLabel: 'Open profile',
+      actionPress: () => {
+        setLockedTabId(null);
+        setActiveTab('profile');
+        notify('info', 'Opened Profile.');
+      }
+    };
+  }, [currentUser, lockedTabId]);
+
   useEffect(() => {
     setNavHistory([]);
+    setLockedTabId(null);
   }, [currentUser?.id]);
 
   useEffect(() => {
@@ -73,15 +108,24 @@ function AppShell() {
       return;
     }
 
-    if (!availableTabs.some((tab) => tab.id === activeTab)) {
-      setActiveTab(availableTabs[0]?.id || 'market');
+    if (!accessibleTabs.some((tab) => tab.id === activeTab)) {
+      setActiveTab(accessibleTabs[0]?.id || 'market');
     }
-  }, [activeTab, availableTabs, currentUser]);
+  }, [accessibleTabs, activeTab, currentUser]);
 
   const navigateToTab = (nextTab) => {
-    const targetTab = availableTabs.find((tab) => tab.id === nextTab);
+    const targetTab = tabs.find((tab) => tab.id === nextTab);
 
     if (!targetTab) {
+      return;
+    }
+
+    if (!targetTab.roles.includes(currentUser?.role)) {
+      setLockedTabId(targetTab.id);
+      notify(
+        'warning',
+        `${targetTab.label} is available to ${targetTab.roles.map((role) => roleLabel(role)).join(' or ')} accounts.`
+      );
       return;
     }
 
@@ -124,7 +168,7 @@ function AppShell() {
       ) : (
         <View style={styles.appFrame}>
           {(() => {
-            const activeTabConfig = availableTabs.find((tab) => tab.id === activeTab) || availableTabs[0];
+            const activeTabConfig = accessibleTabs.find((tab) => tab.id === activeTab) || accessibleTabs[0];
               return (
                 <View style={styles.centerShell}>
                   <View pointerEvents="none" style={styles.backdropLayer}>
@@ -150,14 +194,18 @@ function AppShell() {
                     </View>
 
                   <View style={styles.topNavChips}>
-                    {availableTabs.map((tab) => (
+                    {tabs.map((tab) => {
+                      const isLocked = !tab.roles.includes(currentUser?.role);
+                      return (
                       <Chip
                         key={tab.id}
-                        label={tab.label}
+                        label={isLocked ? `${tab.label} 🔒` : tab.label}
                         active={tab.id === activeTab}
                         onPress={() => navigateToTab(tab.id)}
+                        style={isLocked ? styles.lockedChip : null}
                       />
-                    ))}
+                    );
+                    })}
                   </View>
                 </View>
 
@@ -218,11 +266,24 @@ function AppShell() {
                   {activeTabConfig?.id === 'orders' ? <OrdersScreen /> : null}
                   {activeTabConfig?.id === 'admin' ? <AdminScreen /> : null}
                   {activeTabConfig?.id === 'profile' ? <ProfileScreen /> : null}
+                  {!activeTabConfig ? (
+                    <Card style={styles.emptyWorkspace}>
+                      <Text style={styles.emptyWorkspaceTitle}>Workspace unavailable</Text>
+                      <Text style={styles.emptyWorkspaceText}>
+                        We could not load a tab for this account right now. Use Market to continue or sign out and try again.
+                      </Text>
+                      <View style={styles.emptyWorkspaceActions}>
+                        <Button label="Open market" onPress={() => navigateToTab('market')} />
+                        <Button label="Sign out" variant="secondary" onPress={signOut} />
+                      </View>
+                    </Card>
+                  ) : null}
                 </View>
 
                 <View style={[styles.tabBar, isWide && styles.tabBarWide]}>
-                  {availableTabs.map((tab) => {
+                  {tabs.map((tab) => {
                     const active = tab.id === activeTab;
+                    const locked = !tab.roles.includes(currentUser?.role);
                     return (
                       <Pressable
                         key={tab.id}
@@ -230,18 +291,66 @@ function AppShell() {
                         style={({ pressed, hovered, focused }) => [
                           styles.tabItem,
                           active && styles.tabItemActive,
+                          locked && styles.tabItemLocked,
                           hovered && !active ? styles.tabItemHover : null,
                           focused ? styles.tabItemFocused : null,
                           pressed && { opacity: 0.92 }
                         ]}
                       >
-                        <Text style={styles.tabIcon}>{tab.icon}</Text>
-                        <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-                        <Text style={[styles.tabSubtitle, active && styles.tabSubtitleActive]}>{tab.subtitle}</Text>
+                        <Text style={[styles.tabIcon, locked && styles.tabIconLocked]}>{locked ? '🔒' : tab.icon}</Text>
+                        <Text
+                          style={[
+                            styles.tabLabel,
+                            active && styles.tabLabelActive,
+                            locked && styles.tabLabelLocked
+                          ]}
+                        >
+                          {tab.label}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tabSubtitle,
+                            active && styles.tabSubtitleActive,
+                            locked && styles.tabSubtitleLocked
+                          ]}
+                        >
+                          {locked ? `${tab.subtitle} • ${tab.roles.map((role) => roleLabel(role)).join(' / ')}` : tab.subtitle}
+                        </Text>
                       </Pressable>
                     );
                   })}
                 </View>
+
+                <DetailModal
+                  visible={Boolean(lockedTabInfo)}
+                  eyebrow={lockedTabInfo?.eyebrow}
+                  title={lockedTabInfo?.title || ''}
+                  subtitle={lockedTabInfo?.subtitle || ''}
+                  badgeLabel={lockedTabInfo?.badgeLabel}
+                  badgeTone={lockedTabInfo?.badgeTone}
+                  onClose={() => setLockedTabId(null)}
+                  actions={
+                    lockedTabInfo?.actionLabel ? (
+                      <Button
+                        label={lockedTabInfo.actionLabel}
+                        onPress={lockedTabInfo.actionPress}
+                        style={styles.lockedActionButton}
+                      />
+                    ) : null
+                  }
+                >
+                  {lockedTabInfo ? (
+                    <View style={styles.lockedStack}>
+                      {lockedTabInfo.rows.map(([label, value, note]) => (
+                        <Card key={label} style={styles.lockedRowCard}>
+                          <Text style={styles.lockedRowLabel}>{label}</Text>
+                          <Text style={styles.lockedRowValue}>{value}</Text>
+                          {note ? <Text style={styles.lockedRowNote}>{note}</Text> : null}
+                        </Card>
+                      ))}
+                    </View>
+                  ) : null}
+                </DetailModal>
               </View>
             );
           })()}
@@ -359,6 +468,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm
+  },
+  lockedChip: {
+    opacity: 0.75,
+    borderStyle: 'dashed'
   },
   toast: {
     position: 'absolute',
@@ -480,9 +593,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primary
   },
+  tabItemLocked: {
+    opacity: 0.82,
+    borderStyle: 'dashed'
+  },
   tabIcon: {
     fontSize: 18,
     marginBottom: 3
+  },
+  tabIconLocked: {
+    opacity: 0.82
   },
   tabLabel: {
     color: colors.text,
@@ -491,6 +611,9 @@ const styles = StyleSheet.create({
   },
   tabLabelActive: {
     color: '#FFFFFF'
+  },
+  tabLabelLocked: {
+    color: colors.muted
   },
   tabSubtitle: {
     color: colors.muted,
@@ -501,8 +624,55 @@ const styles = StyleSheet.create({
   tabSubtitleActive: {
     color: 'rgba(255,255,255,0.92)'
   },
+  tabSubtitleLocked: {
+    color: colors.muted
+  },
   badgeStack: {
     gap: spacing.sm,
     alignItems: 'flex-end'
+  },
+  emptyWorkspace: {
+    gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg
+  },
+  emptyWorkspaceTitle: {
+    color: colors.text,
+    fontSize: typeScale.lg,
+    fontWeight: weights.bold
+  },
+  emptyWorkspaceText: {
+    color: colors.muted,
+    fontSize: typeScale.sm,
+    lineHeight: 20
+  },
+  emptyWorkspaceActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    flexWrap: 'wrap'
+  },
+  lockedStack: {
+    gap: spacing.sm
+  },
+  lockedRowCard: {
+    gap: 6,
+    backgroundColor: colors.surfaceSoft
+  },
+  lockedRowLabel: {
+    color: colors.muted,
+    fontSize: typeScale.xs
+  },
+  lockedRowValue: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    fontWeight: weights.semibold
+  },
+  lockedRowNote: {
+    color: colors.text,
+    fontSize: typeScale.sm,
+    lineHeight: 20
+  },
+  lockedActionButton: {
+    minWidth: 160
   }
 });

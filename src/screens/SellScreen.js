@@ -315,7 +315,7 @@ export function SellScreen() {
         />
         <Callout
           title="Farmer account required"
-          description="Log in with a farmer account to create listings and manage incoming orders from the live backend."
+          description="Log in with a farmer account to create listings and manage incoming orders from the seller workspace."
           tone="warning"
         />
         <View style={styles.metricsRow}>
