@@ -14,10 +14,10 @@ INSERT INTO users (
 VALUES (
   'Marketplace Administrator',
   'admin@marketplace.com',
-  crypt('AdminPass123', gen_salt('bf')),
+  'AdminPass123',
   'admin',
   'Freetown, Sierra Leone',
-  '',
+  '+23275756395',
   'Platform Operations',
   'Primary marketplace administrator account.',
   TRUE,
