@@ -57,6 +57,11 @@ export function AdminScreen() {
     () => products.find((product) => product.id === selectedProductId) || null,
     [products, selectedProductId]
   );
+  const hiddenListings = products.filter((product) => !product.isVisible);
+  const suspendedUsers = users.filter((user) => !user.isActive);
+  const totalRevenue = analytics.totalRevenue;
+  const completedOrders = analytics.completedOrders;
+
   const insightInfo = useMemo(() => {
     if (!insightKey) {
       return null;
@@ -237,11 +242,6 @@ export function AdminScreen() {
       </ScrollView>
     );
   }
-
-  const hiddenListings = products.filter((product) => !product.isVisible);
-  const suspendedUsers = users.filter((user) => !user.isActive);
-  const totalRevenue = analytics.totalRevenue;
-  const completedOrders = analytics.completedOrders;
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

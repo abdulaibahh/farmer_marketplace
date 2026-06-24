@@ -32,6 +32,7 @@ const STRIPE_WEBHOOK_SECRET = String(process.env.STRIPE_WEBHOOK_SECRET || '').tr
 const PAYMENT_METHODS = ['Secure Card Checkout', 'Orange Money', 'Africell Money', 'Bank Transfer', 'Cash on Delivery'];
 const DELIVERY_METHODS = ['Pickup', 'Local Delivery', 'Courier'];
 const CATEGORY_OPTIONS = ['All', 'Grains', 'Roots & Tubers', 'Vegetables', 'Fruits', 'Spices', 'Legumes'];
+const REFERENCE_PAYMENT_METHODS = ['Orange Money', 'Africell Money', 'Bank Transfer'];
 
 function validateRuntimeConfig() {
   const missing = [];
@@ -72,7 +73,8 @@ function validateRuntimeConfig() {
 validateRuntimeConfig();
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
+  connectionTimeoutMillis: 15000
 });
 
 const stripe = STRIPE_ENABLED ? new Stripe(RAW_STRIPE_SECRET_KEY) : null;
@@ -130,7 +132,7 @@ function mapStripePaymentStatus(eventType, source) {
   }
 
   if (eventType === 'checkout.session.expired' || eventType === 'payment_intent.canceled') {
-    return { orderStatus: 'failed', paymentStatus: 'cancelled' };
+    return { orderStatus: 'cancelled', paymentStatus: 'cancelled' };
   }
 
   if (
@@ -165,7 +167,7 @@ async function syncStripePayment({ source, eventType }) {
     await client.query('BEGIN');
 
     const orderResult = await client.query(
-      'SELECT id, total_price_leones FROM orders WHERE id = $1 FOR UPDATE',
+      'SELECT id, product_id, quantity, status, total_price_leones FROM orders WHERE id = $1 FOR UPDATE',
       [orderId]
     );
 
@@ -175,14 +177,32 @@ async function syncStripePayment({ source, eventType }) {
 
     const amountLeones = Number(orderResult.rows[0].total_price_leones || 0);
 
+    const order = orderResult.rows[0];
+    const isCancellation = orderStatus === 'cancelled';
+    const shouldCancelOrder = isCancellation && order.status === 'pending';
+    const nextOrderStatus = shouldCancelOrder ? 'cancelled' : order.status;
+    const nextOrderPaymentStatus = isCancellation ? 'failed' : orderStatus;
+
+    if (shouldCancelOrder) {
+      await client.query(
+        `UPDATE products
+         SET quantity = quantity + $1,
+             is_available = TRUE,
+             updated_at = NOW()
+         WHERE id = $2`,
+        [Number(order.quantity || 0), order.product_id]
+      );
+    }
+
     await client.query(
       `UPDATE orders
        SET payment_provider = 'stripe',
            payment_reference = $1,
            payment_status = $2,
+           status = $3,
            updated_at = NOW()
-       WHERE id = $3`,
-      [paymentReference, orderStatus, orderId]
+       WHERE id = $4`,
+      [paymentReference, nextOrderPaymentStatus, nextOrderStatus, orderId]
     );
 
     await client.query(
@@ -521,7 +541,7 @@ const registerSchema = z.object({
   phone: z.string().optional().default(''),
   storeName: z.string().optional().default(''),
   bio: z.string().optional().default(''),
-  preferredPaymentMethod: z.string().optional().default(PAYMENT_METHODS[0])
+  preferredPaymentMethod: z.enum(PAYMENT_METHODS).optional().default(PAYMENT_METHODS[0])
 });
 
 const loginSchema = z.object({
@@ -535,7 +555,7 @@ const profileSchema = z.object({
   phone: z.string().optional(),
   storeName: z.string().optional(),
   bio: z.string().optional(),
-  preferredPaymentMethod: z.string().optional(),
+  preferredPaymentMethod: z.enum(PAYMENT_METHODS).optional(),
   avatarUrl: z.string().optional()
 });
 
@@ -556,9 +576,18 @@ const productSchema = z.object({
 const orderSchema = z.object({
   productId: z.coerce.number().int().positive(),
   quantity: z.coerce.number().int().min(1),
-  paymentMethod: z.string().min(1),
-  deliveryMethod: z.string().min(1),
+  paymentMethod: z.enum(PAYMENT_METHODS),
+  paymentReference: z.string().trim().max(120).optional().default(''),
+  deliveryMethod: z.enum(DELIVERY_METHODS),
   note: z.string().optional().default('')
+}).superRefine((body, context) => {
+  if (REFERENCE_PAYMENT_METHODS.includes(body.paymentMethod) && body.paymentReference.length < 3) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['paymentReference'],
+      message: 'Enter the mobile money transaction ID or bank transfer reference.'
+    });
+  }
 });
 
 const reviewSchema = z.object({
@@ -616,9 +645,9 @@ function gatewayAmountForOrder(totalLeones) {
 async function createPaymentFlow({ order, buyer }) {
   if (order.paymentMethod !== 'Secure Card Checkout') {
     return {
-      provider: 'manual',
+      provider: order.paymentMethod === 'Cash on Delivery' ? 'cash_on_delivery' : 'seller_verified',
       status: 'pending',
-      reference: null,
+      reference: order.paymentReference || null,
       checkoutUrl: null
     };
   }
@@ -716,9 +745,13 @@ async function updateProductById(productId, patch, client = pool) {
   return fetchProductById(productId, client);
 }
 
-app.get('/health', (req, res) => {
-  res.json({ ok: true, service: 'farmer-marketplace-api' });
-});
+app.get(
+  '/health',
+  asyncHandler(async (req, res) => {
+    await pool.query('SELECT 1');
+    res.json({ ok: true, service: 'farmer-marketplace-api', database: 'connected' });
+  })
+);
 
 app.get('/', (req, res) => {
   res.json({
@@ -991,13 +1024,11 @@ app.post(
       try {
         await client.query('BEGIN');
         const productResult = await client.query(
-          `SELECT p.*, u.full_name AS farmer_name, COALESCE(ROUND(AVG(r.rating)::numeric, 1), 4.5) AS farmer_rating
+          `SELECT p.*, u.full_name AS farmer_name
            FROM products p
            JOIN users u ON u.id = p.farmer_id
-           LEFT JOIN reviews r ON r.seller_id = u.id
            WHERE p.id = $1
-           GROUP BY p.id, u.full_name
-           FOR UPDATE`,
+           FOR UPDATE OF p`,
           [body.productId]
         );
 
@@ -1017,8 +1048,8 @@ app.post(
           `INSERT INTO orders (
             buyer_id, farmer_id, product_id, product_name, category, quantity, unit,
             unit_price_leones, total_price_leones, payment_method, payment_status, delivery_method,
-            status, note, reviewed
-          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'pending',$13,FALSE)
+            status, note, reviewed, payment_reference
+          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'pending',$13,FALSE,$14)
           RETURNING id`,
           [
             req.currentUser.id,
@@ -1033,7 +1064,8 @@ app.post(
             body.paymentMethod,
             paymentStatus,
             body.deliveryMethod,
-            body.note || ''
+            body.note || '',
+            body.paymentReference || null
           ]
         );
 
@@ -1108,7 +1140,10 @@ app.post(
     requireRole('farmer', 'admin'),
     asyncHandler(async (req, res) => {
       const orderId = Number(req.params.id);
-      const existing = await pool.query('SELECT farmer_id FROM orders WHERE id = $1', [orderId]);
+      const existing = await pool.query(
+        'SELECT farmer_id, status, payment_method, payment_status, payment_reference FROM orders WHERE id = $1',
+        [orderId]
+      );
       if (!existing.rows[0]) {
         throw createError(404, 'That order no longer exists.');
       }
@@ -1117,10 +1152,39 @@ app.post(
         throw createError(403, 'You cannot confirm that order.');
       }
 
+      if (existing.rows[0].status !== 'pending') {
+        throw createError(400, 'Only pending orders can be confirmed.');
+      }
+
+      if (existing.rows[0].payment_method === 'Secure Card Checkout' && existing.rows[0].payment_status !== 'paid') {
+        throw createError(400, 'Card payment must complete before this order can be confirmed.');
+      }
+
+      const verifiesReferencePayment = REFERENCE_PAYMENT_METHODS.includes(existing.rows[0].payment_method);
+      if (verifiesReferencePayment && !existing.rows[0].payment_reference) {
+        throw createError(400, 'This order is missing its payment reference.');
+      }
+
       await pool.query(
-        `UPDATE orders SET status = 'confirmed', confirmed_at = COALESCE(confirmed_at, NOW()), updated_at = NOW() WHERE id = $1`,
-        [orderId]
+        `UPDATE orders
+         SET status = 'confirmed',
+             payment_status = CASE WHEN $2 THEN 'paid' ELSE payment_status END,
+             confirmed_at = COALESCE(confirmed_at, NOW()),
+             updated_at = NOW()
+         WHERE id = $1`,
+        [orderId, verifiesReferencePayment]
       );
+
+      if (verifiesReferencePayment) {
+        await pool.query(
+          `UPDATE payments
+           SET status = 'paid',
+               updated_at = NOW()
+           WHERE order_id = $1`,
+          [orderId]
+        );
+      }
+
       res.json({ order: await fetchOrderById(orderId), bootstrap: await loadBootstrap(req.currentUser.id) });
     })
   )
@@ -1132,13 +1196,17 @@ app.post(
     requireRole('farmer', 'admin'),
     asyncHandler(async (req, res) => {
       const orderId = Number(req.params.id);
-      const existing = await pool.query('SELECT farmer_id, payment_method FROM orders WHERE id = $1', [orderId]);
+      const existing = await pool.query('SELECT farmer_id, payment_method, status FROM orders WHERE id = $1', [orderId]);
       if (!existing.rows[0]) {
         throw createError(404, 'That order no longer exists.');
       }
 
       if (req.currentUser.role === 'farmer' && existing.rows[0].farmer_id !== req.currentUser.id) {
         throw createError(403, 'You cannot update that order.');
+      }
+
+      if (existing.rows[0].status !== 'confirmed') {
+        throw createError(400, 'Only confirmed orders can be marked as delivered.');
       }
 
       await pool.query(
@@ -1150,6 +1218,17 @@ app.post(
          WHERE id = $1`,
         [orderId]
       );
+
+      if (existing.rows[0].payment_method === 'Cash on Delivery') {
+        await pool.query(
+          `UPDATE payments
+           SET status = 'paid',
+               updated_at = NOW()
+           WHERE order_id = $1`,
+          [orderId]
+        );
+      }
+
       res.json({ order: await fetchOrderById(orderId), bootstrap: await loadBootstrap(req.currentUser.id) });
     })
   )
@@ -1258,28 +1337,25 @@ app.use((req, res) => {
 });
 
 app.use((error, req, res, next) => {
-  const status = error.status || 500;
-  const message = error.message || 'An unexpected error occurred.';
+  const isValidationError = error instanceof z.ZodError;
+  const status = isValidationError ? 400 : error.status || 500;
+  const message = isValidationError
+    ? error.issues[0]?.message || 'Please check the submitted information.'
+    : error.message || 'An unexpected error occurred.';
   if (status >= 500) {
     console.error(error);
   }
   res.status(status).json({
     error: message,
-    details: error.details || null
+    details: isValidationError ? error.issues : error.details || null
   });
 });
 
-async function start() {
-  try {
-    await pool.query('SELECT 1');
-    app.listen(PORT, () => {
-      console.log(`API running on http://localhost:${PORT}`);
-      console.log(`Public checkout return URL: ${PAYMENT_RETURN_URL}`);
-    });
-  } catch (error) {
-    console.error('Unable to start backend', error);
-    process.exit(1);
-  }
+function start() {
+  app.listen(PORT, () => {
+    console.log(`API running on http://localhost:${PORT}`);
+    console.log(`Public checkout return URL: ${PAYMENT_RETURN_URL}`);
+  });
 }
 
 start();

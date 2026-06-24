@@ -7,25 +7,40 @@ async function request(path, { method = 'GET', body, token } = {}) {
     throw new Error('API base URL is not configured.');
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method,
-    headers: {
-      Accept: 'application/json',
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
-    body: body === undefined ? undefined : JSON.stringify(body)
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
 
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    const error = new Error(payload?.error || 'Request failed.');
-    error.status = response.status;
-    error.details = payload?.details || null;
+  try {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
+      method,
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+      const error = new Error(payload?.error || `Request failed with status ${response.status}.`);
+      error.status = response.status;
+      error.details = payload?.details || null;
+      throw error;
+    }
+
+    return payload;
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      const timeoutError = new Error('The server took too long to respond. Please try again.');
+      timeoutError.code = 'REQUEST_TIMEOUT';
+      throw timeoutError;
+    }
     throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return payload;
 }
 
 export const api = {

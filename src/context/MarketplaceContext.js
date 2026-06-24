@@ -44,6 +44,11 @@ function formatValidationMessage(error, fallbackMessage) {
       if (emailIssue) {
         return 'Please enter a valid email address, like name@example.com.';
       }
+
+      const firstIssue = issues.find((issue) => typeof issue?.message === 'string' && issue.message.trim());
+      if (firstIssue) {
+        return firstIssue.message.trim();
+      }
     } catch {
       if (/invalid email/i.test(rawMessage)) {
         return 'Please enter a valid email address, like name@example.com.';
@@ -153,6 +158,8 @@ export function MarketplaceProvider({ children }) {
 
     if (!hasApiBaseUrl) {
       notify('danger', 'EXPO_PUBLIC_API_URL is not configured.');
+    } else if (error?.code === 'REQUEST_TIMEOUT') {
+      notify('danger', error.message);
     } else {
       notify('danger', fallbackMessage);
     }
@@ -503,15 +510,22 @@ export function MarketplaceProvider({ children }) {
         productId: payload.productId,
         quantity,
         paymentMethod: payload.paymentMethod || paymentMethods[0],
+        paymentReference: payload.paymentReference || '',
         deliveryMethod: payload.deliveryMethod || deliveryMethods[0],
         note: payload.note || ''
       });
       applyResponse(result);
-      if (!options.silent) {
-        if (result.checkoutUrl && options.openCheckout !== false) {
-          Linking.openURL(result.checkoutUrl).catch(() => {});
-          notify('info', 'Secure checkout opened in your browser.');
-        } else if (!result.checkoutUrl) {
+      if (result.checkoutUrl && options.openCheckout !== false) {
+        try {
+          await Linking.openURL(result.checkoutUrl);
+          if (!options.silent) {
+            notify('info', 'Secure checkout opened in your browser.');
+          }
+        } catch {
+          notify('warning', 'The order was created, but checkout could not be opened. Use the order screen to try again.');
+        }
+      } else if (!options.silent) {
+        if (!result.checkoutUrl) {
           notify('success', 'Order placed successfully.');
         } else {
           notify('success', 'Order added to your payment queue.');

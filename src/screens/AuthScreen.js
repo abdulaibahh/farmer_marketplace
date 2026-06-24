@@ -28,6 +28,7 @@ export function AuthScreen() {
   const [phone, setPhone] = useState('');
   const [storeName, setStoreName] = useState('');
   const [bio, setBio] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [selectionMessage, setSelectionMessage] = useState('Choose a path above to see the sign-in form update.');
   const [journeyKey, setJourneyKey] = useState(null);
 
@@ -140,27 +141,36 @@ export function AuthScreen() {
   ];
 
   const submit = async () => {
+    if (submitting) {
+      return;
+    }
+
     if (!emailLooksValid(email)) {
       notify('warning', 'Please enter a valid email address, like name@example.com.');
       return;
     }
 
-    if (mode === 'login') {
-      await signIn({ email, password });
-      return;
-    }
+    setSubmitting(true);
+    try {
+      if (mode === 'login') {
+        await signIn({ email, password });
+        return;
+      }
 
-    await register({
-      name,
-      email,
-      password,
-      role,
-      location,
-      phone,
-      storeName,
-      bio,
-      preferredPaymentMethod: paymentMethods[0]
-    });
+      await register({
+        name,
+        email,
+        password,
+        role,
+        location,
+        phone,
+        storeName,
+        bio,
+        preferredPaymentMethod: paymentMethods[0]
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -364,8 +374,9 @@ export function AuthScreen() {
           )}
 
           <Button
-            label={mode === 'login' ? 'Sign in' : 'Create account'}
+            label={submitting ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
             onPress={submit}
+            disabled={submitting}
             style={styles.submitButton}
           />
         </Card>

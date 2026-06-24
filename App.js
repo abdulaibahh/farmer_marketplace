@@ -58,6 +58,7 @@ function AppShell() {
   const [lockedTabId, setLockedTabId] = useState(null);
   const { width } = useWindowDimensions();
   const isWide = width >= 980;
+  const isCompact = width < 720;
 
   const accessibleTabs = useMemo(
     () => tabs.filter((tab) => tab.roles.includes(currentUser?.role)),
@@ -171,7 +172,7 @@ function AppShell() {
             const activeTabConfig = accessibleTabs.find((tab) => tab.id === activeTab) || accessibleTabs[0];
               return (
                 <View style={styles.centerShell}>
-                  <View pointerEvents="none" style={styles.backdropLayer}>
+                  <View style={[styles.backdropLayer, styles.pointerEventsNone]}>
                     <LinearGradient
                       colors={['rgba(134, 212, 183, 0.24)', 'rgba(134, 212, 183, 0)']}
                       style={styles.backdropGlowLeft}
@@ -193,61 +194,70 @@ function AppShell() {
                       </View>
                     </View>
 
-                  <View style={styles.topNavChips}>
-                    {tabs.map((tab) => {
-                      const isLocked = !tab.roles.includes(currentUser?.role);
-                      return (
-                      <Chip
-                        key={tab.id}
-                        label={isLocked ? `${tab.label} 🔒` : tab.label}
-                        active={tab.id === activeTab}
-                        onPress={() => navigateToTab(tab.id)}
-                        style={isLocked ? styles.lockedChip : null}
-                      />
-                    );
-                    })}
-                  </View>
+                  {!isCompact ? (
+                    <View style={styles.topNavChips}>
+                      {tabs.map((tab) => {
+                        const isLocked = !tab.roles.includes(currentUser?.role);
+                        return (
+                          <Chip
+                            key={tab.id}
+                            label={isLocked ? `${tab.label} 🔒` : tab.label}
+                            active={tab.id === activeTab}
+                            onPress={() => navigateToTab(tab.id)}
+                            style={isLocked ? styles.lockedChip : null}
+                          />
+                        );
+                      })}
+                    </View>
+                  ) : null}
                 </View>
 
-                <LinearGradient colors={gradients.hero} style={styles.headerCard}>
+                <LinearGradient
+                  colors={gradients.hero}
+                  style={[styles.headerCard, isCompact && styles.headerCardCompact]}
+                >
                   <View style={styles.headerTopRow}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.appTitle}>Farmer Marketplace</Text>
-                      <Text style={styles.appSubtitle}>
-                        A polished direct-trade marketplace for Sierra Leone farmers, buyers, and administrators.
-                      </Text>
+                      {!isCompact ? (
+                        <Text style={styles.appSubtitle}>
+                          A polished direct-trade marketplace for Sierra Leone farmers, buyers, and administrators.
+                        </Text>
+                      ) : null}
                     </View>
                     <View style={styles.badgeStack}>
                       <Badge label={roleLabel(currentUser.role)} tone={currentUser.role === 'admin' ? 'accent' : 'primary'} />
                     </View>
                   </View>
 
-                  <View style={styles.headerMetrics}>
-                    <StatCard
-                      label="Open market"
-                      value={String(analytics.activeProducts)}
-                      hint="Tap to browse"
-                      icon="🛒"
-                      tone="primary"
-                      onPress={() => navigateToTab('market')}
-                    />
-                    <StatCard
-                      label="Order revenue"
-                      value={formatLeones(analytics.totalRevenue)}
-                      hint="Tap to review"
-                      icon="💰"
-                      tone="accent"
-                      onPress={() => navigateToTab('orders')}
-                    />
-                    <StatCard
-                      label="Pending tasks"
-                      value={String(analytics.pendingOrders)}
-                      hint={currentUser.role === 'admin' ? 'Tap admin tools' : 'Tap orders'}
-                      icon="⏳"
-                      tone="info"
-                      onPress={() => navigateToTab(adminFallbackTab)}
-                    />
-                  </View>
+                  {!isCompact ? (
+                    <View style={styles.headerMetrics}>
+                      <StatCard
+                        label="Open market"
+                        value={String(analytics.activeProducts)}
+                        hint="Tap to browse"
+                        icon="🛒"
+                        tone="primary"
+                        onPress={() => navigateToTab('market')}
+                      />
+                      <StatCard
+                        label="Order revenue"
+                        value={formatLeones(analytics.totalRevenue)}
+                        hint="Tap to review"
+                        icon="💰"
+                        tone="accent"
+                        onPress={() => navigateToTab('orders')}
+                      />
+                      <StatCard
+                        label="Pending tasks"
+                        value={String(analytics.pendingOrders)}
+                        hint={currentUser.role === 'admin' ? 'Tap admin tools' : 'Tap orders'}
+                        icon="⏳"
+                        tone="info"
+                        onPress={() => navigateToTab(adminFallbackTab)}
+                      />
+                    </View>
+                  ) : null}
 
                   <View style={styles.currentUserRow}>
                     <View>
@@ -281,41 +291,40 @@ function AppShell() {
                 </View>
 
                 <View style={[styles.tabBar, isWide && styles.tabBarWide]}>
-                  {tabs.map((tab) => {
+                  {accessibleTabs.map((tab) => {
                     const active = tab.id === activeTab;
-                    const locked = !tab.roles.includes(currentUser?.role);
                     return (
                       <Pressable
                         key={tab.id}
                         onPress={() => navigateToTab(tab.id)}
                         style={({ pressed, hovered, focused }) => [
                           styles.tabItem,
+                          isCompact && styles.tabItemCompact,
                           active && styles.tabItemActive,
-                          locked && styles.tabItemLocked,
                           hovered && !active ? styles.tabItemHover : null,
                           focused ? styles.tabItemFocused : null,
                           pressed && { opacity: 0.92 }
                         ]}
                       >
-                        <Text style={[styles.tabIcon, locked && styles.tabIconLocked]}>{locked ? '🔒' : tab.icon}</Text>
+                        <Text style={styles.tabIcon}>{tab.icon}</Text>
                         <Text
                           style={[
                             styles.tabLabel,
-                            active && styles.tabLabelActive,
-                            locked && styles.tabLabelLocked
+                            active && styles.tabLabelActive
                           ]}
                         >
                           {tab.label}
                         </Text>
-                        <Text
-                          style={[
-                            styles.tabSubtitle,
-                            active && styles.tabSubtitleActive,
-                            locked && styles.tabSubtitleLocked
-                          ]}
-                        >
-                          {locked ? `${tab.subtitle} • ${tab.roles.map((role) => roleLabel(role)).join(' / ')}` : tab.subtitle}
-                        </Text>
+                        {!isCompact ? (
+                          <Text
+                            style={[
+                              styles.tabSubtitle,
+                              active && styles.tabSubtitleActive
+                            ]}
+                          >
+                            {tab.subtitle}
+                          </Text>
+                        ) : null}
                       </Pressable>
                     );
                   })}
@@ -393,10 +402,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
   appFrame: {
-    flex: 1
+    flex: 1,
+    minHeight: 0
   },
   centerShell: {
     flex: 1,
+    minHeight: 0,
     width: '100%',
     maxWidth: 1240,
     alignSelf: 'center',
@@ -404,6 +415,9 @@ const styles = StyleSheet.create({
   },
   backdropLayer: {
     ...StyleSheet.absoluteFillObject
+  },
+  pointerEventsNone: {
+    pointerEvents: 'none'
   },
   backdropGlowLeft: {
     position: 'absolute',
@@ -500,6 +514,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     overflow: 'hidden'
   },
+  headerCardCompact: {
+    padding: spacing.md,
+    gap: spacing.sm
+  },
   headerTopRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -541,7 +559,8 @@ const styles = StyleSheet.create({
     minWidth: 98
   },
   screenWrap: {
-    flex: 1
+    flex: 1,
+    minHeight: 0
   },
   tabBar: {
     flexDirection: 'row',
@@ -576,6 +595,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: 6
+  },
+  tabItemCompact: {
+    minWidth: 0,
+    paddingVertical: 7
   },
   tabItemHover: {
     borderColor: '#C6D4C9',

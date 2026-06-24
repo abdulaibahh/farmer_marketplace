@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
-import { categoryOptions } from '../data/catalog';
+import { categoryOptions, requiresPaymentReference } from '../data/catalog';
 import { availabilityLabel, averageScore, formatLeones, formatShortDate } from '../utils/format';
 import {
   Badge,
@@ -36,6 +36,10 @@ const emptyDraft = {
   isFeatured: false,
   isAvailable: true
 };
+
+function confirmationLabel(order) {
+  return requiresPaymentReference(order?.paymentMethod) ? 'Confirm & verify payment' : 'Confirm order';
+}
 
 export function SellScreen() {
   const {
@@ -688,6 +692,7 @@ export function SellScreen() {
               <View style={styles.badgeRow}>
                 <Badge label={formatLeones(order.totalPrice)} tone="primary" />
                 <Badge label={order.paymentMethod} tone={order.paymentStatus === 'paid' ? 'success' : 'warning'} />
+                <Badge label={`Payment: ${order.paymentStatus}`} tone={order.paymentStatus === 'paid' ? 'success' : 'warning'} />
                 <Badge label={order.deliveryMethod} tone="info" />
               </View>
 
@@ -696,7 +701,7 @@ export function SellScreen() {
               <View style={styles.buttonRow}>
                 {order.status === 'pending' ? (
                   <Button
-                    label="Confirm order"
+                    label={confirmationLabel(order)}
                     onPress={() => confirmOrder(order.id)}
                     style={styles.flex}
                   />
@@ -832,7 +837,7 @@ export function SellScreen() {
             <View style={styles.detailActionRow}>
               {selectedOrder.status === 'pending' ? (
                 <Button
-                  label="Confirm order"
+                  label={confirmationLabel(selectedOrder)}
                   onPress={() => confirmOrder(selectedOrder.id)}
                   style={styles.flex}
                 />
@@ -856,6 +861,16 @@ export function SellScreen() {
                 <Text style={styles.detailLabel}>Payment</Text>
                 <Text style={styles.detailValue}>{selectedOrder.paymentMethod}</Text>
               </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Payment status</Text>
+                <Text style={styles.detailValue}>{selectedOrder.paymentStatus}</Text>
+              </View>
+              {selectedOrder.paymentReference ? (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Payment reference</Text>
+                  <Text style={styles.detailValue}>{selectedOrder.paymentReference}</Text>
+                </View>
+              ) : null}
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Delivery</Text>
                 <Text style={styles.detailValue}>{selectedOrder.deliveryMethod}</Text>

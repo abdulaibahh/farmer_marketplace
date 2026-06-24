@@ -29,14 +29,10 @@ export function ProfileScreen() {
     setPreferredPaymentMethod(currentUser.preferredPaymentMethod || paymentMethods[0]);
   }, [currentUser]);
 
-  if (!currentUser) {
-    return null;
-  }
-
-  const role = currentUser.role;
-  const sellerReviews = reviews.filter((review) => review.sellerId === currentUser.id);
-  const buyerOrders = orders.filter((order) => order.buyerId === currentUser.id);
-  const farmerProducts = products.filter((product) => product.farmerId === currentUser.id);
+  const role = currentUser?.role;
+  const sellerReviews = reviews.filter((review) => review.sellerId === currentUser?.id);
+  const buyerOrders = orders.filter((order) => order.buyerId === currentUser?.id);
+  const farmerProducts = products.filter((product) => product.farmerId === currentUser?.id);
   const averageRating = averageScore(sellerReviews.map((review) => review.rating));
   const orderCount =
     role === 'buyer'
@@ -47,7 +43,7 @@ export function ProfileScreen() {
   const listingCount = role === 'farmer' ? farmerProducts.length : role === 'admin' ? products.length : 0;
   const ratingValue = role === 'farmer' ? averageRating : role === 'admin' ? averageScore(reviews.map((review) => review.rating)) : 0;
   const detailInfo = useMemo(() => {
-    if (!detailKey) {
+    if (!currentUser || !detailKey) {
       return null;
     }
 
@@ -193,6 +189,10 @@ export function ProfileScreen() {
     updateProfile,
     reviews.length
   ]);
+
+  if (!currentUser) {
+    return null;
+  }
 
   const openDetail = (key) => {
     setDetailKey(key);

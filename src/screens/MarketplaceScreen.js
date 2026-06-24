@@ -9,7 +9,12 @@ import {
   View
 } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
-import { categoryOptions, deliveryMethods, paymentMethods } from '../data/catalog';
+import {
+  categoryOptions,
+  deliveryMethods,
+  paymentMethods,
+  requiresPaymentReference
+} from '../data/catalog';
 import { averageScore, availabilityLabel, formatLeones, initialsFromName } from '../utils/format';
 import {
   Badge,
@@ -64,9 +69,11 @@ export function MarketplaceScreen() {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [quantity, setQuantity] = useState('1');
   const [paymentMethod, setPaymentMethod] = useState(paymentMethods[0]);
+  const [paymentReference, setPaymentReference] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState(deliveryMethods[0]);
   const [note, setNote] = useState('');
   const [cartPaymentMethod, setCartPaymentMethod] = useState(paymentMethods[0]);
+  const [cartPaymentReference, setCartPaymentReference] = useState('');
   const [cartDeliveryMethod, setCartDeliveryMethod] = useState(deliveryMethods[0]);
   const [cartNote, setCartNote] = useState('');
   const [insightKey, setInsightKey] = useState(null);
@@ -250,14 +257,14 @@ export function MarketplaceScreen() {
     () => ({
       eyebrow: 'Payment integration',
       title: 'How payments work in this marketplace',
-      subtitle: 'Stripe powers card checkout, while the mobile money and bank transfer paths act as simulated/manual payment methods for the assignment.',
+      subtitle: 'Stripe handles card checkout. Mobile money and bank transfers use a real transaction reference that the seller verifies before fulfilment.',
       badgeLabel: 'Payments',
       badgeTone: 'accent',
       rows: [
         ['Secure Card Checkout', 'Stripe hosted checkout', 'Real card payment flow in test or live mode.'],
-        ['Orange Money', 'Simulated mobile money', 'Creates an order and tracks it through the normal workflow.'],
-        ['Africell Money', 'Simulated mobile money', 'Works like Orange Money for the project brief.'],
-        ['Bank Transfer', 'Manual confirmation flow', 'Buyer can place the order and the seller/admin can confirm it.'],
+        ['Orange Money', 'Transaction reference required', 'The seller verifies the submitted transaction ID when confirming the order.'],
+        ['Africell Money', 'Transaction reference required', 'The seller verifies the submitted transaction ID when confirming the order.'],
+        ['Bank Transfer', 'Transfer reference required', 'The seller verifies the submitted bank reference before fulfilment.'],
         ['Cash on Delivery', 'Functional delivery payment', 'Automatically becomes paid when the order is delivered.']
       ]
     }),
@@ -465,12 +472,14 @@ export function MarketplaceScreen() {
 
     setQuantity('1');
     setPaymentMethod(currentUser?.preferredPaymentMethod || paymentMethods[0]);
+    setPaymentReference('');
     setDeliveryMethod(deliveryMethods[0]);
     setNote('');
   }, [currentUser?.preferredPaymentMethod, selectedProduct]);
 
   useEffect(() => {
     setCartPaymentMethod(currentUser?.preferredPaymentMethod || paymentMethods[0]);
+    setCartPaymentReference('');
     setCartDeliveryMethod(deliveryMethods[0]);
     setCartNote('');
   }, [currentUser?.preferredPaymentMethod, currentUser?.id]);
@@ -482,11 +491,13 @@ export function MarketplaceScreen() {
       productId: selectedProduct.id,
       quantity: Number(quantity || 1),
       paymentMethod,
+      paymentReference,
       deliveryMethod,
       note
     });
 
     if (success) {
+      setPaymentReference('');
       setSelectedProductId(null);
     }
   };
@@ -511,12 +522,18 @@ export function MarketplaceScreen() {
       return;
     }
 
+    if (requiresPaymentReference(cartPaymentMethod) && cartPaymentReference.trim().length < 3) {
+      notify('warning', 'Enter the mobile money transaction ID or bank transfer reference.');
+      return;
+    }
+
     for (const lineItem of cartLineItems) {
       const result = await placeOrder(
         {
           productId: lineItem.product.id,
           quantity: lineItem.quantity,
           paymentMethod: cartPaymentMethod,
+          paymentReference: cartPaymentReference.trim(),
           deliveryMethod: cartDeliveryMethod,
           note: cartNote
         },
@@ -533,6 +550,7 @@ export function MarketplaceScreen() {
 
     await clearCart();
     setCartNote('');
+    setCartPaymentReference('');
 
     if (cartPaymentMethod === 'Secure Card Checkout') {
       notify('info', 'Your secure payment opened in a browser. Complete it to finish the cart checkout.');
@@ -762,6 +780,16 @@ export function MarketplaceScreen() {
                 </View>
               </View>
 
+              {requiresPaymentReference(cartPaymentMethod) ? (
+                <Input
+                  label="Payment reference"
+                  placeholder="Transaction ID or bank transfer reference"
+                  value={cartPaymentReference}
+                  onChangeText={setCartPaymentReference}
+                  helper="The farmer verifies this reference before confirming the order."
+                />
+              ) : null}
+
               <Input
                 label="Cart note"
                 placeholder="Any special instructions for the full cart"
@@ -781,7 +809,11 @@ export function MarketplaceScreen() {
               ) : (
                 <Callout
                   title="Cart checkout ready"
-                  description="Proceed when you’re happy with the products, quantities, and delivery choice."
+                  description={
+                    requiresPaymentReference(cartPaymentMethod)
+                      ? 'Your transaction reference will be attached to every order in this cart for seller verification.'
+                      : 'Proceed when you’re happy with the products, quantities, and delivery choice.'
+                  }
                   tone="info"
                 />
               )}
@@ -1073,6 +1105,16 @@ export function MarketplaceScreen() {
                         </View>
                       </View>
 
+                      {requiresPaymentReference(paymentMethod) ? (
+                        <Input
+                          label="Payment reference"
+                          placeholder="Transaction ID or bank transfer reference"
+                          value={paymentReference}
+                          onChangeText={setPaymentReference}
+                          helper="The farmer verifies this reference before confirming the order."
+                        />
+                      ) : null}
+
                       <Input
                         label="Order note"
                         placeholder="Delivery instructions or preferred pickup time"
@@ -1085,7 +1127,11 @@ export function MarketplaceScreen() {
 
                       <Callout
                         title="Payments supported"
-                        description="Mobile money, bank transfer, and cash on delivery are all available in the marketplace flow."
+                        description={
+                          requiresPaymentReference(paymentMethod)
+                            ? 'Your submitted reference is recorded with the order and verified by the farmer.'
+                            : 'Secure card checkout and cash on delivery are both handled through the live order workflow.'
+                        }
                         tone="info"
                       />
 

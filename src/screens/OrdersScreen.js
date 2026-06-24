@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
+import { requiresPaymentReference } from '../data/catalog';
 import { formatLeones, formatShortDate } from '../utils/format';
 import { Badge, Button, Card, Chip, DetailModal, EmptyState, Input, SectionHeader, StatCard } from '../components/ui';
 import { colors, radius, spacing, typeScale, weights } from '../theme';
@@ -10,6 +11,10 @@ function stars(count) {
   return '★★★★★'.slice(0, rounded) + '☆☆☆☆☆'.slice(0, 5 - rounded);
 }
 
+function confirmationLabel(order) {
+  return requiresPaymentReference(order?.paymentMethod) ? 'Confirm & verify payment' : 'Confirm order';
+}
+
 export function OrdersScreen() {
   const { currentUser, orders, addReview, confirmOrder, deliverOrder, notify } = useMarketplace();
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -17,6 +22,12 @@ export function OrdersScreen() {
   const [reviewTargetId, setReviewTargetId] = useState(null);
   const [reviewRating, setReviewRating] = useState('5');
   const [reviewComment, setReviewComment] = useState('');
+
+  const openOrderDetails = useCallback((orderId) => {
+    setSelectedOrderId(orderId);
+    setReviewTargetId(null);
+    notify('info', 'Order details opened.');
+  }, [notify]);
 
   const scopedOrders = useMemo(() => {
     if (!currentUser) {
@@ -171,12 +182,6 @@ export function OrdersScreen() {
     notify('info', 'Review form opened.');
   };
 
-  const openOrderDetails = (orderId) => {
-    setSelectedOrderId(orderId);
-    setReviewTargetId(null);
-    notify('info', 'Order details opened.');
-  };
-
   const submitReview = async () => {
     const success = await addReview({
       orderId: reviewTargetId,
@@ -299,6 +304,7 @@ export function OrdersScreen() {
                 <Badge label={`${order.quantity} ${order.unit}`} tone="primary" />
                 <Badge label={formatLeones(order.totalPrice)} tone="accent" />
                 <Badge label={order.paymentMethod} tone={order.paymentStatus === 'paid' ? 'success' : 'warning'} />
+                <Badge label={`Payment: ${order.paymentStatus}`} tone={order.paymentStatus === 'paid' ? 'success' : 'warning'} />
                 <Badge label={order.deliveryMethod} tone="info" />
               </View>
 
@@ -345,7 +351,7 @@ export function OrdersScreen() {
                 <View style={styles.buttonRow}>
                   {order.status === 'pending' ? (
                     <Button
-                      label="Confirm"
+                      label={confirmationLabel(order)}
                       onPress={() => confirmOrder(order.id)}
                       style={styles.flex}
                     />
@@ -412,6 +418,16 @@ export function OrdersScreen() {
                 <Text style={styles.detailValue}>{selectedOrder.paymentMethod}</Text>
               </View>
               <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Payment status</Text>
+                <Text style={styles.detailValue}>{selectedOrder.paymentStatus}</Text>
+              </View>
+              {selectedOrder.paymentReference ? (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Payment reference</Text>
+                  <Text style={styles.detailValue}>{selectedOrder.paymentReference}</Text>
+                </View>
+              ) : null}
+              <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Delivery</Text>
                 <Text style={styles.detailValue}>{selectedOrder.deliveryMethod}</Text>
               </View>
@@ -467,7 +483,7 @@ export function OrdersScreen() {
               <View style={styles.buttonRow}>
                 {selectedOrder.status === 'pending' ? (
                   <Button
-                    label="Confirm order"
+                    label={confirmationLabel(selectedOrder)}
                     onPress={() => confirmOrder(selectedOrder.id)}
                     style={styles.flex}
                   />
