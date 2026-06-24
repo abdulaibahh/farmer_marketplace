@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { requiresPaymentReference } from '../data/catalog';
 import { formatLeones, formatShortDate } from '../utils/format';
@@ -17,6 +17,8 @@ function confirmationLabel(order) {
 
 export function OrdersScreen() {
   const { currentUser, orders, addReview, confirmOrder, deliverOrder, notify } = useMarketplace();
+  const { width } = useWindowDimensions();
+  const orderCardStyle = width >= 1200 ? { flexBasis: '48.8%' } : null;
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [insightKey, setInsightKey] = useState(null);
   const [reviewTargetId, setReviewTargetId] = useState(null);
@@ -269,7 +271,7 @@ export function OrdersScreen() {
         subtitle={scopedOrders.length ? 'Most recent activity appears first.' : 'No orders to show yet.'}
       />
 
-      <View style={styles.grid}>
+      <View style={[styles.grid, scopedOrders.length > 0 && styles.gridResponsive]}>
         {scopedOrders.length === 0 ? (
           <EmptyState
             title="No orders yet"
@@ -280,7 +282,7 @@ export function OrdersScreen() {
           scopedOrders.map((order) => (
             <Card
               key={order.id}
-              style={styles.orderCard}
+              style={[styles.orderCard, orderCardStyle]}
               onPress={() => {
                 notify('info', `Opened ${order.productName}.`);
                 openOrderDetails(order.id);
@@ -555,8 +557,15 @@ const styles = StyleSheet.create({
   grid: {
     gap: spacing.md
   },
+  gridResponsive: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'stretch'
+  },
   orderCard: {
-    gap: spacing.md
+    gap: spacing.md,
+    flexGrow: 1,
+    minWidth: 300
   },
   detailStack: {
     gap: spacing.md

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -61,6 +62,7 @@ export function MarketplaceScreen() {
     notify
   } = useMarketplace();
   const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
   const columns = width >= 1100 ? 3 : width >= 720 ? 2 : 1;
   const cardBasis = columns === 3 ? '31.5%' : columns === 2 ? '48.5%' : '100%';
   const [search, setSearch] = useState('');
@@ -987,8 +989,14 @@ export function MarketplaceScreen() {
           setSelectedProductId(null);
         }}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
+        <View
+          style={[
+            styles.modalBackdrop,
+            Platform.OS === 'web' && styles.modalBackdropWeb,
+            isDesktop && styles.modalBackdropDesktop
+          ]}
+        >
+          <View style={[styles.modalSheet, isDesktop && styles.modalSheetDesktop]}>
             <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
               {selectedProduct ? (
                 <>
@@ -1424,6 +1432,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(8, 18, 10, 0.42)',
     justifyContent: 'flex-end'
   },
+  modalBackdropWeb: {
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 1000
+  },
+  modalBackdropDesktop: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xxl
+  },
   modalSheet: {
     maxHeight: '94%',
     backgroundColor: colors.background,
@@ -1432,6 +1453,17 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     borderWidth: 1,
     borderColor: colors.border
+  },
+  modalSheetDesktop: {
+    width: '100%',
+    maxWidth: 1040,
+    maxHeight: '88%',
+    borderRadius: 28,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.24,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 18 },
+    elevation: 8
   },
   modalContent: {
     padding: spacing.lg,

@@ -46,6 +46,8 @@ Official pricing pages:
 3. Run `database/schema.sql`
 4. Run `database/initial-admin.sql` and replace the placeholder email/password with your own secure admin credentials
 
+The sign-in screen includes a protected **Administrator** option. Public registration remains limited to buyers and farmers; administrators sign in with an account provisioned by `database/initial-admin.sql`.
+
 ### 2) Deploy the backend on Render
 
 1. Create a new Render Web Service from this repo, or import `render.yaml`

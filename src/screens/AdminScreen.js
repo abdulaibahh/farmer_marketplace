@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { availabilityLabel, averageScore, formatLeones, formatShortDate, roleLabel } from '../utils/format';
 import { Badge, Button, Card, DetailModal, EmptyState, SectionHeader, StatCard } from '../components/ui';
@@ -19,6 +19,9 @@ export function AdminScreen() {
     toggleUserVerification,
     notify
   } = useMarketplace();
+  const { width } = useWindowDimensions();
+  const gridCardStyle =
+    width >= 1400 ? { flexBasis: '31.5%' } : width >= 900 ? { flexBasis: '48.5%' } : null;
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [insightKey, setInsightKey] = useState(null);
@@ -309,7 +312,7 @@ export function AdminScreen() {
         {users.map((user) => (
           <Card
             key={user.id}
-            style={styles.userCard}
+            style={[styles.userCard, gridCardStyle]}
             onPress={() => {
               notify('info', `Opened ${user.name}.`);
               setSelectedUserId(user.id);
@@ -358,7 +361,7 @@ export function AdminScreen() {
           products.map((product) => (
           <Card
             key={product.id}
-            style={styles.productCard}
+            style={[styles.productCard, gridCardStyle]}
             onPress={() => {
               notify('info', `Opened ${product.name}.`);
               setSelectedProductId(product.id);
@@ -446,65 +449,67 @@ export function AdminScreen() {
         />
       </View>
 
-      <Card
-        style={styles.reportCard}
-        onPress={() => {
-          setInsightKey('payments');
-          notify('info', 'Opened payment method details.');
-        }}
-      >
-        <SectionHeader title="Payment methods" subtitle="How buyers prefer to settle their orders." />
-        {paymentBreakdown.length === 0 ? (
-          <EmptyState title="No payment data" description="Orders will populate this report over time." icon="💳" />
-        ) : (
-          paymentBreakdown.map((item) => (
-            <View key={item.method} style={styles.reportRow}>
-              <Text style={styles.reportLabel}>{item.method}</Text>
-              <Text style={styles.reportValue}>{item.count}</Text>
-            </View>
-          ))
-        )}
-      </Card>
+      <View style={styles.reportGrid}>
+        <Card
+          style={[styles.reportCard, gridCardStyle]}
+          onPress={() => {
+            setInsightKey('payments');
+            notify('info', 'Opened payment method details.');
+          }}
+        >
+          <SectionHeader title="Payment methods" subtitle="How buyers prefer to settle their orders." />
+          {paymentBreakdown.length === 0 ? (
+            <EmptyState title="No payment data" description="Orders will populate this report over time." icon="💳" />
+          ) : (
+            paymentBreakdown.map((item) => (
+              <View key={item.method} style={styles.reportRow}>
+                <Text style={styles.reportLabel}>{item.method}</Text>
+                <Text style={styles.reportValue}>{item.count}</Text>
+              </View>
+            ))
+          )}
+        </Card>
 
-      <Card
-        style={styles.reportCard}
-        onPress={() => {
-          setInsightKey('feedback');
-          notify('info', 'Opened product feedback details.');
-        }}
-      >
-        <SectionHeader title="Product feedback" subtitle="Average ratings and review counts across the catalogue." />
-        {productRatings.slice(0, 5).map(({ product, rating, reviewCount }) => (
-          <View key={product.id} style={styles.reportRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.reportLabel}>{product.name}</Text>
-              <Text style={styles.reportNote}>{reviewCount} review{reviewCount === 1 ? '' : 's'}</Text>
+        <Card
+          style={[styles.reportCard, gridCardStyle]}
+          onPress={() => {
+            setInsightKey('feedback');
+            notify('info', 'Opened product feedback details.');
+          }}
+        >
+          <SectionHeader title="Product feedback" subtitle="Average ratings and review counts across the catalogue." />
+          {productRatings.slice(0, 5).map(({ product, rating, reviewCount }) => (
+            <View key={product.id} style={styles.reportRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.reportLabel}>{product.name}</Text>
+                <Text style={styles.reportNote}>{reviewCount} review{reviewCount === 1 ? '' : 's'}</Text>
+              </View>
+              <Text style={styles.reportValue}>{rating ? rating.toFixed(1) : '—'}</Text>
             </View>
-            <Text style={styles.reportValue}>{rating ? rating.toFixed(1) : '—'}</Text>
-          </View>
-        ))}
-      </Card>
+          ))}
+        </Card>
 
-      <Card
-        style={styles.reportCard}
-        onPress={() => {
-          setInsightKey('transactions');
-          notify('info', 'Opened recent transaction details.');
-        }}
-      >
-        <SectionHeader title="Recent transactions" subtitle="Latest order feed for audit and monitoring." />
-        {orders.slice(0, 5).map((order) => (
-          <View key={order.id} style={styles.transactionRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.reportLabel}>{order.productName}</Text>
-              <Text style={styles.reportNote}>
-                {order.buyerName} • {order.status} • {formatShortDate(order.createdAt)}
-              </Text>
+        <Card
+          style={[styles.reportCard, gridCardStyle]}
+          onPress={() => {
+            setInsightKey('transactions');
+            notify('info', 'Opened recent transaction details.');
+          }}
+        >
+          <SectionHeader title="Recent transactions" subtitle="Latest order feed for audit and monitoring." />
+          {orders.slice(0, 5).map((order) => (
+            <View key={order.id} style={styles.transactionRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.reportLabel}>{order.productName}</Text>
+                <Text style={styles.reportNote}>
+                  {order.buyerName} • {order.status} • {formatShortDate(order.createdAt)}
+                </Text>
+              </View>
+              <Text style={styles.reportValue}>{formatLeones(order.totalPrice)}</Text>
             </View>
-            <Text style={styles.reportValue}>{formatLeones(order.totalPrice)}</Text>
-          </View>
-        ))}
-      </Card>
+          ))}
+        </Card>
+      </View>
 
       <DetailModal
         visible={Boolean(selectedUser)}
@@ -785,13 +790,20 @@ const styles = StyleSheet.create({
     fontSize: typeScale.sm
   },
   grid: {
-    gap: spacing.md
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    alignItems: 'stretch'
   },
   userCard: {
-    gap: spacing.md
+    gap: spacing.md,
+    flexGrow: 1,
+    minWidth: 280
   },
   productCard: {
-    gap: spacing.md
+    gap: spacing.md,
+    flexGrow: 1,
+    minWidth: 280
   },
   cardHeader: {
     flexDirection: 'row',
@@ -826,7 +838,15 @@ const styles = StyleSheet.create({
     flex: 1
   },
   reportCard: {
-    gap: spacing.sm
+    gap: spacing.sm,
+    flexGrow: 1,
+    minWidth: 280
+  },
+  reportGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    alignItems: 'stretch'
   },
   reportRow: {
     flexDirection: 'row',

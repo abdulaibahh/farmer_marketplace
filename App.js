@@ -56,6 +56,7 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState('market');
   const [navHistory, setNavHistory] = useState([]);
   const [lockedTabId, setLockedTabId] = useState(null);
+  const [authEntryPath, setAuthEntryPath] = useState('all');
   const { width } = useWindowDimensions();
   const isWide = width >= 980;
   const isCompact = width < 720;
@@ -90,18 +91,26 @@ function AppShell() {
         ['Your current role', currentRole, currentUser ? 'This account does not match the workspace permissions.' : 'You are not signed in yet.'],
         ['What it does', lockedTab.subtitle, 'The tab stays visible so you can see the full app structure.']
       ],
-      actionLabel: 'Open profile',
-      actionPress: () => {
+      actionLabel: lockedTab.id === 'admin' ? 'Switch to admin sign-in' : 'Open profile',
+      actionPress: async () => {
         setLockedTabId(null);
+        if (lockedTab.id === 'admin') {
+          setAuthEntryPath('admin');
+          await signOut();
+          return;
+        }
         setActiveTab('profile');
         notify('info', 'Opened Profile.');
       }
     };
-  }, [currentUser, lockedTabId]);
+  }, [currentUser, lockedTabId, notify, signOut]);
 
   useEffect(() => {
     setNavHistory([]);
     setLockedTabId(null);
+    if (currentUser) {
+      setAuthEntryPath('all');
+    }
   }, [currentUser?.id]);
 
   useEffect(() => {
@@ -165,7 +174,7 @@ function AppShell() {
       ) : null}
 
       {!currentUser ? (
-        <AuthScreen />
+        <AuthScreen initialAudience={authEntryPath} />
       ) : (
         <View style={styles.appFrame}>
           {(() => {
@@ -409,7 +418,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 0,
     width: '100%',
-    maxWidth: 1240,
+    maxWidth: 1600,
     alignSelf: 'center',
     position: 'relative'
   },

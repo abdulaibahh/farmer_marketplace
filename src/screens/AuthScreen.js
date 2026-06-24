@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,12 +15,20 @@ import { colors, gradients, radius, spacing, typeScale, weights } from '../theme
 import { roleLabel } from '../utils/format';
 import { Button, Card, Callout, Chip, DetailModal, FeatureCarousel, Input, SectionHeader, StatCard } from '../components/ui';
 
-export function AuthScreen() {
+const loginAudiences = [
+  { id: 'all', label: 'All accounts' },
+  { id: 'buyer', label: 'Buyer' },
+  { id: 'farmer', label: 'Farmer' },
+  { id: 'admin', label: 'Administrator' }
+];
+
+export function AuthScreen({ initialAudience = 'all' }) {
   const { signIn, register, notify } = useMarketplace();
   const { width } = useWindowDimensions();
   const isWide = width >= 920;
   const [mode, setMode] = useState('login');
   const [role, setRole] = useState('buyer');
+  const [loginAudience, setLoginAudience] = useState(initialAudience);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +41,26 @@ export function AuthScreen() {
   const [journeyKey, setJourneyKey] = useState(null);
 
   const emailLooksValid = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+
+  useEffect(() => {
+    if (!loginAudiences.some((audience) => audience.id === initialAudience)) {
+      return;
+    }
+    setMode('login');
+    setLoginAudience(initialAudience);
+    if (initialAudience === 'admin') {
+      setSelectionMessage('Administrator sign-in is ready. Use a provisioned admin account.');
+    }
+  }, [initialAudience]);
+
+  const loginTitle =
+    loginAudience === 'admin'
+      ? 'Administrator sign in'
+      : loginAudience === 'farmer'
+        ? 'Farmer sign in'
+        : loginAudience === 'buyer'
+          ? 'Buyer sign in'
+          : 'Sign in';
 
   const journeyDetails = {
     buyer: {
@@ -81,7 +109,25 @@ export function AuthScreen() {
       ],
       ctaLabel: 'Go to sign in',
       nextMode: 'login',
-      nextRole: null
+      nextRole: null,
+      nextAudience: 'all'
+    },
+    admin: {
+      eyebrow: 'Administrator access',
+      title: 'Moderate users, listings, orders, and marketplace reports.',
+      subtitle: 'Administrator accounts are provisioned securely and use the same sign-in form without public registration.',
+      badgeLabel: 'Admin portal',
+      badgeTone: 'info',
+      points: [
+        'Review and suspend marketplace accounts.',
+        'Remove or restore product listings.',
+        'Monitor orders, revenue, payments, and buyer feedback.',
+        'Admin accounts are created through the secure database provisioning script.'
+      ],
+      ctaLabel: 'Go to admin sign in',
+      nextMode: 'login',
+      nextRole: null,
+      nextAudience: 'admin'
     }
   };
 
@@ -93,6 +139,18 @@ export function AuthScreen() {
     setSelectionMessage(message);
     setJourneyKey(nextJourneyKey);
     notify('info', message);
+  };
+
+  const selectLoginAudience = (audience) => {
+    setMode('login');
+    setLoginAudience(audience);
+    const label = loginAudiences.find((candidate) => candidate.id === audience)?.label || 'Account';
+    setSelectionMessage(
+      audience === 'admin'
+        ? 'Administrator sign-in selected. Use a provisioned admin email and password.'
+        : `${label} sign-in selected. Enter the credentials for that account.`
+    );
+    notify('info', `${label} sign-in selected.`);
   };
 
   const heroSlides = [
@@ -125,17 +183,17 @@ export function AuthScreen() {
       }
     },
     {
-      id: 'checkout',
-      eyebrow: 'Secure checkout',
-      title: 'Stripe checkout with flexible payment options.',
-      description: 'Built for a polished production experience from day one.',
-      cta: 'Sign in now',
-      tone: 'accent',
-      colors: [colors.accent, '#A86710'],
+      id: 'admin',
+      eyebrow: 'Admin portal',
+      title: 'Moderate users, listings, and marketplace activity.',
+      description: 'A dedicated workspace for provisioned platform administrators.',
+      cta: 'Open admin sign in',
+      tone: 'info',
+      colors: [colors.info, colors.primaryDark],
       onPress: () => {
-        setSelectionMessage('Sign-in journey details opened. Review the full path, then continue to the form.');
-        setJourneyKey('login');
-        notify('info', 'Opened sign-in journey details.');
+        setSelectionMessage('Administrator journey details opened. Review the access path, then continue to sign in.');
+        setJourneyKey('admin');
+        notify('info', 'Opened administrator access details.');
       }
     }
   ];
@@ -153,7 +211,11 @@ export function AuthScreen() {
     setSubmitting(true);
     try {
       if (mode === 'login') {
-        await signIn({ email, password });
+        await signIn({
+          email,
+          password,
+          expectedRole: loginAudience === 'all' ? undefined : loginAudience
+        });
         return;
       }
 
@@ -220,15 +282,15 @@ export function AuthScreen() {
             }}
           />
           <StatCard
-            label="Secure checkout"
-            value="Live"
-            hint="Tap to sign in"
-            icon="💳"
+            label="Admin portal"
+            value="Protected"
+            hint="Tap to manage"
+            icon="🛡️"
             tone="info"
             onPress={() => {
-              setSelectionMessage('Sign-in journey details opened. Review the full path, then continue to the form.');
-              setJourneyKey('login');
-              notify('info', 'Opened sign-in journey details.');
+              setSelectionMessage('Administrator journey details opened. Review the access path, then continue to sign in.');
+              setJourneyKey('admin');
+              notify('info', 'Opened administrator access details.');
             }}
           />
         </View>
@@ -236,10 +298,12 @@ export function AuthScreen() {
         <Card style={styles.panel}>
           <SectionHeader
             eyebrow="Access"
-            title={mode === 'login' ? 'Sign in' : 'Create account'}
+            title={mode === 'login' ? loginTitle : 'Create account'}
             subtitle={
               mode === 'login'
-                ? 'Use your email and password to continue.'
+                ? loginAudience === 'admin'
+                  ? 'Use the credentials for a provisioned administrator account.'
+                  : 'Use your email and password to continue.'
                 : 'Farmers and buyers can register from this screen.'
             }
             action={
@@ -258,6 +322,27 @@ export function AuthScreen() {
           />
 
           <Callout title="Selected path" description={selectionMessage} tone="info" />
+
+          {mode === 'login' ? (
+            <View style={styles.sectionGap}>
+              <Text style={styles.fieldLabel}>Sign in as</Text>
+              <View style={styles.chipRow}>
+                {loginAudiences.map((audience) => (
+                  <Chip
+                    key={audience.id}
+                    label={audience.label}
+                    active={loginAudience === audience.id}
+                    onPress={() => selectLoginAudience(audience.id)}
+                  />
+                ))}
+              </View>
+              {loginAudience === 'admin' ? (
+                <Text style={styles.helperText}>
+                  Administrator registration is disabled. Provision admin accounts with database/initial-admin.sql.
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
 
           {mode === 'register' ? (
             <>
@@ -374,7 +459,15 @@ export function AuthScreen() {
           )}
 
           <Button
-            label={submitting ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+            label={
+              submitting
+                ? 'Please wait…'
+                : mode === 'login'
+                  ? loginAudience === 'admin'
+                    ? 'Sign in to admin portal'
+                    : 'Sign in'
+                  : 'Create account'
+            }
             onPress={submit}
             disabled={submitting}
             style={styles.submitButton}
@@ -403,10 +496,15 @@ export function AuthScreen() {
                 if (journey.nextRole) {
                   setRole(journey.nextRole);
                 }
+                if (journey.nextAudience) {
+                  setLoginAudience(journey.nextAudience);
+                }
                 setSelectionMessage(
                   journey.nextRole
                     ? `${journey.nextRole === 'buyer' ? 'Buyer' : 'Farmer'} registration is ready. Complete the form below.`
-                    : 'Sign in is ready. Enter your email and password below.'
+                    : journey.nextAudience === 'admin'
+                      ? 'Administrator sign-in is ready. Enter your provisioned credentials below.'
+                      : 'Sign in is ready. Enter your email and password below.'
                 );
                 setJourneyKey(null);
               }}
@@ -432,6 +530,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
   content: {
+    width: '100%',
+    maxWidth: 1480,
+    alignSelf: 'center',
     padding: spacing.lg,
     gap: spacing.lg,
     paddingBottom: spacing.xxl

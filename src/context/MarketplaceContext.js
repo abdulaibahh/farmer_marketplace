@@ -296,12 +296,16 @@ export function MarketplaceProvider({ children }) {
   const visibleOrders = useMemo(() => sortNewest(orders), [orders]);
   const analytics = useMemo(() => computeAnalytics({ users, products, orders }), [orders, products, users]);
 
-  const signIn = async ({ email, password }) => {
+  const signIn = async ({ email, password, expectedRole }) => {
     try {
       const result = await api.login({
         email: String(email || '').trim(),
         password: String(password || '')
       });
+      if (expectedRole && result.user.role !== expectedRole) {
+        notify('warning', `Those credentials belong to a ${result.user.role} account, not the selected ${expectedRole} sign-in.`);
+        return false;
+      }
       authTokenRef.current = result.token;
       await saveToken(result.token);
       applyResponse(result);

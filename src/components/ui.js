@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Image,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -383,11 +384,27 @@ export function DetailModal({
   children,
   actions
 }) {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.detailBackdrop}>
-        <View style={styles.detailSheet}>
-          <ScrollView contentContainerStyle={styles.detailContent} showsVerticalScrollIndicator={false}>
+    <Modal visible={visible} transparent animationType={isDesktop ? 'fade' : 'slide'} onRequestClose={onClose}>
+      <View
+        style={[
+          styles.detailBackdrop,
+          Platform.OS === 'web' && styles.detailBackdropWeb,
+          isDesktop && styles.detailBackdropDesktop
+        ]}
+      >
+        <View
+          accessibilityRole="dialog"
+          accessibilityLabel={`${title} dialog`}
+          style={[styles.detailSheet, isDesktop && styles.detailSheetDesktop]}
+        >
+          <ScrollView
+            contentContainerStyle={[styles.detailContent, isDesktop && styles.detailContentDesktop]}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.detailHeader}>
               <View style={{ flex: 1 }}>
                 {!!eyebrow && <Text style={styles.detailEyebrow}>{eyebrow}</Text>}
@@ -871,6 +888,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(9, 22, 15, 0.45)',
     justifyContent: 'flex-end'
   },
+  detailBackdropWeb: {
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 1000
+  },
+  detailBackdropDesktop: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xxl
+  },
   detailSheet: {
     maxHeight: '92%',
     backgroundColor: colors.background,
@@ -879,10 +909,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border
   },
+  detailSheetDesktop: {
+    width: '100%',
+    maxWidth: 960,
+    maxHeight: '86%',
+    borderRadius: 28,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.24,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 18 },
+    elevation: 8
+  },
   detailContent: {
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
     gap: spacing.lg
+  },
+  detailContentDesktop: {
+    padding: spacing.xxl
   },
   detailHeader: {
     flexDirection: 'row',

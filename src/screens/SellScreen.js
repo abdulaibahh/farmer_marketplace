@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { categoryOptions, requiresPaymentReference } from '../data/catalog';
 import { availabilityLabel, averageScore, formatLeones, formatShortDate } from '../utils/format';
@@ -54,6 +54,9 @@ export function SellScreen() {
     deliverOrder,
     notify
   } = useMarketplace();
+  const { width } = useWindowDimensions();
+  const gridCardStyle =
+    width >= 1400 ? { flexBasis: '31.5%' } : width >= 900 ? { flexBasis: '48.5%' } : null;
 
   const [draft, setDraft] = useState(emptyDraft);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -600,7 +603,7 @@ export function SellScreen() {
         subtitle={farmerProducts.length ? 'Tap edit to change price, stock, or details.' : 'No listings yet.'}
       />
 
-      <View style={styles.grid}>
+      <View style={[styles.grid, farmerProducts.length > 0 && styles.gridResponsive]}>
         {farmerProducts.length === 0 ? (
           <EmptyState
             title="Nothing listed yet"
@@ -611,7 +614,7 @@ export function SellScreen() {
           farmerProducts.map((product) => (
             <Card
               key={product.id}
-              style={styles.productCard}
+              style={[styles.productCard, gridCardStyle]}
               onPress={() => openProductDetails(product)}
               accessibilityLabel={`View ${product.name}`}
             >
@@ -664,7 +667,7 @@ export function SellScreen() {
         subtitle={farmerOrders.length ? 'Confirm or complete orders as they move through the system.' : 'No orders yet.'}
       />
 
-      <View style={styles.grid}>
+      <View style={[styles.grid, farmerOrders.length > 0 && styles.gridResponsive]}>
         {farmerOrders.length === 0 ? (
           <EmptyState
             title="No incoming orders"
@@ -675,7 +678,7 @@ export function SellScreen() {
           farmerOrders.map((order) => (
             <Card
               key={order.id}
-              style={styles.orderCard}
+              style={[styles.orderCard, gridCardStyle]}
               onPress={() => openOrderDetails(order)}
               accessibilityLabel={`View ${order.productName}`}
             >
@@ -1013,8 +1016,15 @@ const styles = StyleSheet.create({
   grid: {
     gap: spacing.md
   },
+  gridResponsive: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'stretch'
+  },
   productCard: {
-    gap: spacing.md
+    gap: spacing.md,
+    flexGrow: 1,
+    minWidth: 280
   },
   productTop: {
     flexDirection: 'row',
@@ -1043,7 +1053,9 @@ const styles = StyleSheet.create({
   },
   orderCard: {
     gap: spacing.md,
-    backgroundColor: colors.surfaceSoft
+    backgroundColor: colors.surfaceSoft,
+    flexGrow: 1,
+    minWidth: 280
   },
   orderNote: {
     color: colors.text,
