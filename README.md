@@ -90,8 +90,9 @@ If Render shows Docker settings instead of build/start commands, use this instea
 
 ## Run locally
 
-- Backend API: `npm run api`
-- Expo app: `npm start`
+- Web app and backend together: `npm run dev`
+- Backend API only: `npm run api`
+- Expo app only: `npm start`
 - Web export: `npm run export:web`
 
 If you test on a physical device, point `EXPO_PUBLIC_API_URL` at your computer's LAN IP instead of `localhost`.

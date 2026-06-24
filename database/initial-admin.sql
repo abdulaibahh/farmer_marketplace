@@ -13,8 +13,8 @@ INSERT INTO users (
 )
 VALUES (
   'Marketplace Administrator',
-  'admin@yourdomain.com',
-  crypt('ChangeThisAdminPassword!', gen_salt('bf')),
+  'admin@marketplace.com',
+  crypt('AdminPass123', gen_salt('bf')),
   'admin',
   'Freetown, Sierra Leone',
   '',

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking } from 'react-native';
 import { paymentMethods, deliveryMethods } from '../data/catalog';
-import { api, hasApiBaseUrl } from '../services/api';
+import { api, hasApiBaseUrl, usesLocalApi } from '../services/api';
 import { clearCart, clearToken, loadCart, loadToken, saveCart, saveToken } from '../services/storage';
 import { averageScore } from '../utils/format';
 
@@ -158,10 +158,10 @@ export function MarketplaceProvider({ children }) {
 
     if (!hasApiBaseUrl) {
       notify('danger', 'EXPO_PUBLIC_API_URL is not configured.');
-    } else if (error?.code === 'REQUEST_TIMEOUT') {
+    } else if (error?.code === 'REQUEST_TIMEOUT' || error?.code === 'NETWORK_ERROR') {
       notify('danger', error.message);
     } else {
-      notify('danger', fallbackMessage);
+      notify('danger', usesLocalApi ? 'The local API is unavailable. Run npm run dev and try again.' : fallbackMessage);
     }
 
     return false;

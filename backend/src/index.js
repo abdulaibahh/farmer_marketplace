@@ -85,7 +85,23 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      const allowed = !origin || CLIENT_ORIGINS.includes('*') || CLIENT_ORIGINS.includes(origin);
+      let isLocalDevelopmentOrigin = false;
+      if (NODE_ENV !== 'production' && origin) {
+        try {
+          const parsedOrigin = new URL(origin);
+          isLocalDevelopmentOrigin =
+            (parsedOrigin.hostname === 'localhost' || parsedOrigin.hostname === '127.0.0.1') &&
+            (parsedOrigin.protocol === 'http:' || parsedOrigin.protocol === 'https:');
+        } catch {
+          isLocalDevelopmentOrigin = false;
+        }
+      }
+
+      const allowed =
+        !origin ||
+        CLIENT_ORIGINS.includes('*') ||
+        CLIENT_ORIGINS.includes(origin) ||
+        isLocalDevelopmentOrigin;
       callback(null, allowed);
     },
     credentials: false

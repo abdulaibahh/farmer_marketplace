@@ -1,6 +1,15 @@
-const apiBaseUrl = String(process.env.EXPO_PUBLIC_API_URL || '').trim().replace(/\/+$/, '');
+const configuredApiBaseUrl = String(process.env.EXPO_PUBLIC_API_URL || '').trim().replace(/\/+$/, '');
+const isLocalWeb =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const localApiBaseUrl =
+  typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:4000`
+    : 'http://localhost:4000';
+const apiBaseUrl = isLocalWeb ? localApiBaseUrl : configuredApiBaseUrl;
 
 export const hasApiBaseUrl = Boolean(apiBaseUrl);
+export const usesLocalApi = isLocalWeb;
 
 async function request(path, { method = 'GET', body, token } = {}) {
   if (!hasApiBaseUrl) {
@@ -36,6 +45,15 @@ async function request(path, { method = 'GET', body, token } = {}) {
       const timeoutError = new Error('The server took too long to respond. Please try again.');
       timeoutError.code = 'REQUEST_TIMEOUT';
       throw timeoutError;
+    }
+    if (!error?.status) {
+      const networkError = new Error(
+        usesLocalApi
+          ? 'The local API is not running. Start the app with npm run dev.'
+          : 'The marketplace API could not be reached.'
+      );
+      networkError.code = 'NETWORK_ERROR';
+      throw networkError;
     }
     throw error;
   } finally {
