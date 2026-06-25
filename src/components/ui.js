@@ -229,6 +229,7 @@ export function FeatureCarousel({ slides, style }) {
       showsHorizontalScrollIndicator={false}
       snapToInterval={slideWidth + spacing.md}
       snapToAlignment="start"
+      style={styles.carouselViewport}
       contentContainerStyle={[styles.carouselRow, style]}
     >
       {slides.map((slide) => {
@@ -675,6 +676,11 @@ const styles = StyleSheet.create({
   carouselRow: {
     gap: spacing.md,
     paddingVertical: spacing.xs
+  },
+  carouselViewport: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0
   },
   carouselWrap: {
     minHeight: 212

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,6 +22,9 @@ const loginAudiences = [
   { id: 'farmer', label: 'Farmer' },
   { id: 'admin', label: 'Administrator' }
 ];
+
+const loginBackgroundImage = require('../../assets/login-background.png');
+const accessBackgroundImage = require('../../assets/access-background.png');
 
 export function AuthScreen({ initialAudience = 'all' }) {
   const { signIn, register, notify } = useMarketplace();
@@ -236,27 +240,46 @@ export function AuthScreen({ initialAudience = 'all' }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <ImageBackground
+      source={loginBackgroundImage}
+      resizeMode="cover"
+      blurRadius={Platform.OS === 'web' ? 2 : 1}
+      style={styles.background}
+      imageStyle={styles.backgroundImage}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <View style={styles.backgroundTint} />
+      <KeyboardAvoidingView
+        style={styles.root}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <LinearGradient colors={gradients.hero} style={styles.hero}>
-          <Text style={styles.kicker}>Farmer Marketplace</Text>
-          <Text style={styles.title}>Connect farmers and buyers directly.</Text>
-          <Text style={styles.subtitle}>
-            A mobile commerce workspace for Sierra Leone with listing management, order tracking,
-            secure payments, and admin moderation.
-          </Text>
-        </LinearGradient>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <ImageBackground
+            source={loginBackgroundImage}
+            resizeMode="cover"
+            style={styles.hero}
+            imageStyle={styles.heroImage}
+          >
+            <LinearGradient
+              colors={['rgba(8, 40, 25, 0.93)', 'rgba(15, 83, 53, 0.72)', 'rgba(12, 55, 34, 0.88)']}
+              locations={[0, 0.58, 1]}
+              style={styles.heroOverlay}
+            >
+              <Text style={styles.kicker}>Farmer Marketplace</Text>
+              <Text style={styles.title}>Connect farmers and buyers directly.</Text>
+              <Text style={styles.subtitle}>
+                A mobile commerce workspace for Sierra Leone with listing management, order tracking,
+                secure payments, and admin moderation.
+              </Text>
+            </LinearGradient>
+          </ImageBackground>
 
-        <FeatureCarousel slides={heroSlides} />
+          <FeatureCarousel slides={heroSlides} />
 
-        <View style={[styles.metricsRow, isWide && styles.metricsRowWide]}>
+          <View style={[styles.metricsRow, isWide && styles.metricsRowWide]}>
           <StatCard
             label="Buyer flow"
             value="Instant"
@@ -293,9 +316,25 @@ export function AuthScreen({ initialAudience = 'all' }) {
               notify('info', 'Opened administrator access details.');
             }}
           />
-        </View>
+          </View>
 
-        <Card style={styles.panel}>
+          <ImageBackground
+            source={accessBackgroundImage}
+            resizeMode="cover"
+            style={styles.panel}
+            imageStyle={styles.panelBackgroundImage}
+          >
+            <LinearGradient
+              colors={[
+                'rgba(255,255,255,0.84)',
+                'rgba(250,253,248,0.66)',
+                'rgba(225,240,221,0.48)'
+              ]}
+              locations={[0, 0.52, 1]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.panelOverlay}
+            >
           <SectionHeader
             eyebrow="Access"
             title={mode === 'login' ? loginTitle : 'Create account'}
@@ -472,9 +511,10 @@ export function AuthScreen({ initialAudience = 'all' }) {
             disabled={submitting}
             style={styles.submitButton}
           />
-        </Card>
+            </LinearGradient>
+          </ImageBackground>
 
-        <DetailModal
+          <DetailModal
           visible={Boolean(journeyKey && journeyDetails[journeyKey])}
           title={journeyDetails[journeyKey]?.title || ''}
           subtitle={journeyDetails[journeyKey]?.subtitle || ''}
@@ -518,16 +558,29 @@ export function AuthScreen({ initialAudience = 'all' }) {
               </Card>
             ))}
           </View>
-        </DetailModal>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          </DetailModal>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    backgroundColor: '#153F29',
+    overflow: 'hidden'
+  },
+  backgroundImage: {
+    opacity: 0.34
+  },
+  backgroundTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(239, 241, 222, 0.72)'
+  },
   root: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: 'transparent'
   },
   content: {
     width: '100%',
@@ -538,29 +591,65 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl
   },
   hero: {
-    gap: spacing.sm,
-    padding: spacing.lg,
     borderRadius: radius.lg,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    minHeight: 210,
+    justifyContent: 'center',
+    backgroundColor: colors.heroStart
+  },
+  heroImage: {
+    borderRadius: radius.lg
+  },
+  heroOverlay: {
+    flex: 1,
+    gap: spacing.sm,
+    padding: spacing.xl,
+    justifyContent: 'center'
   },
   kicker: {
-    color: '#CFE9DB',
+    color: '#F2F4D7',
     fontSize: typeScale.xs,
     fontWeight: weights.bold,
     letterSpacing: 1,
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    ...Platform.select({
+      web: { textShadow: '0 1px 4px rgba(0,0,0,0.48)' },
+      default: {
+        textShadowColor: 'rgba(0,0,0,0.48)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 4
+      }
+    })
   },
   title: {
     color: '#FFFFFF',
     fontSize: typeScale.xxl,
     fontWeight: weights.bold,
     lineHeight: 34,
-    marginTop: 6
+    marginTop: 6,
+    maxWidth: 720,
+    ...Platform.select({
+      web: { textShadow: '0 2px 8px rgba(0,0,0,0.7)' },
+      default: {
+        textShadowColor: 'rgba(0,0,0,0.7)',
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 8
+      }
+    })
   },
   subtitle: {
-    color: 'rgba(255,255,255,0.86)',
+    color: '#FFFFFF',
     fontSize: typeScale.md,
-    lineHeight: 22
+    lineHeight: 22,
+    maxWidth: 820,
+    ...Platform.select({
+      web: { textShadow: '0 1px 6px rgba(0,0,0,0.75)' },
+      default: {
+        textShadowColor: 'rgba(0,0,0,0.75)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 6
+      }
+    })
   },
   metricsRow: {
     flexDirection: 'row',
@@ -571,7 +660,25 @@ const styles = StyleSheet.create({
     gap: spacing.lg
   },
   panel: {
-    gap: spacing.md
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.16,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4
+  },
+  panelBackgroundImage: {
+    borderRadius: radius.lg,
+    width: '100%',
+    height: '100%',
+    opacity: 0.96
+  },
+  panelOverlay: {
+    gap: spacing.md,
+    padding: spacing.lg
   },
   detailPoints: {
     gap: spacing.sm
