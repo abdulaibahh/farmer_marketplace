@@ -13,7 +13,7 @@ INSERT INTO users (
 )
 VALUES (
   'Marketplace Administrator',
-  'admin@marketplace.com',
+  'abdulaib087@gmail.com',
   'AdminPass123',
   'admin',
   'Freetown, Sierra Leone',
