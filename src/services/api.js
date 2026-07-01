@@ -1,11 +1,29 @@
+import { Platform } from 'react-native';
+
 const configuredApiBaseUrl = String(process.env.EXPO_PUBLIC_API_URL || '').trim().replace(/\/+$/, '');
+
+function getWebLocation() {
+  if (Platform.OS !== 'web' || typeof window === 'undefined' || !window.location) {
+    return null;
+  }
+
+  const { hostname, protocol } = window.location;
+  if (!hostname) {
+    return null;
+  }
+
+  return {
+    hostname,
+    protocol: protocol || 'http:'
+  };
+}
+
+const webLocation = getWebLocation();
 const isLocalWeb =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-const localApiBaseUrl =
-  typeof window !== 'undefined'
-    ? `${window.location.protocol}//${window.location.hostname}:4000`
-    : 'http://localhost:4000';
+  Boolean(webLocation) && (webLocation.hostname === 'localhost' || webLocation.hostname === '127.0.0.1');
+const localApiBaseUrl = webLocation
+  ? `${webLocation.protocol}//${webLocation.hostname}:4000`
+  : 'http://localhost:4000';
 const apiBaseUrl = isLocalWeb ? localApiBaseUrl : configuredApiBaseUrl;
 
 export const hasApiBaseUrl = Boolean(apiBaseUrl);
